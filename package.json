@@ -1,0 +1,33 @@
+{
+  "name": "Daft_app",
+  "version": "0.1.5",
+  "description": "Helper tool for Daft Punk",
+  "main": "main.js",
+  "scripts": {
+    "test": "npm install && electron .",
+    "start": "electron .",
+    "build": "electron-packager . --out=dist --asar --overwrite --all"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/owner/project"
+  },
+  "devDependencies": {
+    "electron": "latest"
+  },
+  "keywords": [
+    "Daft Punk",
+    "Music"
+  ],
+  "author": {
+    "name" : "Maël Acier",
+    "email" : "contact@github.com",
+    "url" : "http://github.com"
+  },
+  "bugs": {
+    "url" : "https://github.com/owner/project/issues",
+    "email" : "project@hostname.com"
+  },
+  "homepage": "http://github.com",
+  "license": "UNLICENSED"
+}
