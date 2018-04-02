@@ -1,50 +1,48 @@
-const {ipcMain} = require('electron')
+const ipc = require('electron').ipcMain
 const path = require('path')
 const fs = require('fs')
+const glob = require('glob')
+const dialog = require('electron').dialog
 const ffmetadata = require ("ffmetadata");
 
+ipc.on('open-file-dialog', (event,args)=> {
+  dialog.showOpenDialog({
+    properties: ['openFile', 'openDirectory']
+  }, function (files) {
+    if (files) {
+      const folder=files[0];
+      if (args='select'){
+        directory = [];
+        index = {};
+      }
+      console.log(folder);
+      listFiles(folder)
+      console.log(directory);
+      event.sender.send('selected-directory', folder, directory.length)
+      walkArtists(directory);
+    }
+  })
+});
 
-ipcMain.on('submit', (event,folder)=> {
-    console.log(folder);
-    walkSync(folder+'/',directory);
-    walkArtists(directory);
-    setTimeout(myFunction, 6000);
-    function myFunction(){
+ipc.on('submit', (event)=> {
       console.log('artists:',index);
         console.log('artists2:',index["Justice"]);
         console.log('single',Object.keys(index));
         for (var id in index) { // On stocke l'identifiant dans « id » pour parcourir l'objet « family »
             console.log(id,'UNDERSINGLE',index[id]);
         }
-    }
-    } 
-  )
+});
   
-  //var folder = "./folder";
-  var cover = "./tmp"
-  var directory = [];
-  var index = {};
-  var outputAudio = './Audio';
-  var outputVisual = './Visual';
-  var options = {
-    coverPath: "cover.jpg",
-  };
-  
-  var walkSync = function(dir, fileList) {
-    var files = fs.readdirSync(dir);
-    var ext = ['.mp3','.wav']
-    files.forEach(function(file) {
-      if (fs.statSync(dir + file).isDirectory()) {
-        //folders
-        fileList = walkSync(dir + file + '/', fileList);
-      }
-      else if (ext.includes(path.extname(file))){
-        //files
-        fileList.push(dir+file);
-      }
-    });
-    return fileList;
-  };
+var directory = [], index = {}, options = {};
+
+var cover = "./tmp";
+var outputAudio = './Audio';
+var outputVisual = './Visual';
+
+function listFiles(dir){
+  directory = glob.sync(path.join(dir, '**/@(*.mp3|*.wav)'))
+}
+
   
   const mkdirSync = function (dirPath) {
     try {
@@ -53,8 +51,6 @@ ipcMain.on('submit', (event,folder)=> {
       if (err.code !== 'EEXIST') throw err
     }
   }
-  //console.log(walkSync(folder+'/',directory));
-  //walkSync(folder+'/',directory)
   
   function walkArtists (musicList){
     mkdirSync(path.resolve(cover));
@@ -78,7 +74,6 @@ ipcMain.on('submit', (event,folder)=> {
                 index[data.album_artist][data.album][data.title]={};
                 index[data.album_artist][data.album][data.title]["Path"]=file;
                 index[data.album_artist][data.album][data.title]["Track"]=data.track;
-                //console.log('test:',index[data.album_artist][data.album][data.title]);
           }
         });
     });

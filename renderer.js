@@ -1,4 +1,4 @@
-const {ipcRenderer} = require('electron')
+const ipc = require('electron').ipcRenderer
 
 document.addEventListener("keydown", function (e) {
 		if (e.which === 123) {
@@ -6,21 +6,37 @@ document.addEventListener("keydown", function (e) {
 		} else if (e.which === 116) {
 			location.reload();
 		}
-  });
+});
 
 
 
-	var submit = document.getElementById('submit');
-	var directory = document.getElementById('directory');
-	var directoryHolder = document.getElementById('directoryHolder');
+const submit = document.getElementById('submit');
+const directory = document.getElementById('directory');
+const directoryHolder = document.getElementById('directoryHolder');
+const selectDirBtn = document.getElementById('select-directory')
 
-	submit.addEventListener('click', function() {
-		if(directory.files[0]){
-			//alert(directory.files[0].path);
-			ipcRenderer.send('submit', directory.files[0].path)
-		}
-		else{
-			directoryHolder.removeAttribute('disabled');
-			directoryHolder.className += ' uk-form-danger';
-			}
-	});
+submit.addEventListener('click', function() {
+	//if(directory.files[0]){
+		//alert(directory.files[0].path);
+		//ipcRenderer.send('submit', directory.files[0].path)
+		ipc.send('submit');
+	/*}
+	else{
+		directoryHolder.removeAttribute('disabled');
+		directoryHolder.className += ' uk-form-danger';
+		}*/
+});
+
+selectDirBtn.addEventListener('click', function (event) {
+	ipc.send('open-file-dialog', 'select');
+  })
+  
+  ipc.on('selected-directory', function (event, path, nb) {
+	document.getElementById('selected-file').innerHTML = 'You selected: '+path+'and there are '+nb;
+})
+
+// Tell main process to show the menu when demo button is clicked
+const contextMenuBtn = document.getElementById('context-menu')
+contextMenuBtn.addEventListener('click', function () {
+  ipc.send('show-context-menu')
+})
