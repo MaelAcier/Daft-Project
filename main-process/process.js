@@ -1,8 +1,9 @@
-const ipc = require('electron').ipcMain
-const path = require('path')
-const fs = require('fs')
-const glob = require('glob')
-const dialog = require('electron').dialog
+const ipc = require('electron').ipcMain;
+const os = require('os');
+const path = require('path');
+const fs = require('fs');
+const glob = require('glob');
+const {dialog} = require('electron');
 const ffmetadata = require ("ffmetadata");
 
 ipc.on('open-file-dialog', (event,args)=> {
@@ -35,6 +36,8 @@ ipc.on('submit', (event)=> {
   
 var directory = [], index = {}, options = {};
 
+const temp = os.tmpdir();
+console.log('tmp',temp);
 var cover = "./tmp";
 var outputAudio = './Audio';
 var outputVisual = './Visual';
