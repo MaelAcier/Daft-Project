@@ -12,7 +12,7 @@ ipc.on('open-file-dialog', (event,args)=> {
     properties: ['openFile', 'openDirectory']
   }, function (files) {
     if (files) {
-      const folder=files[0];
+      folder=files[0];
       if (args='select'){
         directory = [];
         index = {};
@@ -33,9 +33,10 @@ ipc.on('submit', (event)=> {
         for (var id in index) { // On stocke l'identifiant dans « id » pour parcourir l'objet « family »
             console.log(id,'UNDERSINGLE',index[id]);
         }
+        writeMusics(folder);
 });
   
-var directory = [], index = {};
+var directory = [], index = {}, folder;
 
 const temp = `${os.tmpdir()}\\${electron.app.getName()}-${electron.app.getVersion()}`;
 createDir(temp);
@@ -80,10 +81,10 @@ function listMusics (list){
   });
 }
 
-var output = './output';
-
 function writeMusics (dir){
+  const newDir = `${dir}\\output`
+  createDir(newDir)
   for (var id in index) { // On stocke l'identifiant dans « id » pour parcourir l'objet « family »
-    createDir()
+    createDir(`${newDir}\\${id}`)
   }
 }
