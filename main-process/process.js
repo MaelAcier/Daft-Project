@@ -41,12 +41,8 @@ var directory = [], index = {}, folder;
 const temp = `${os.tmpdir()}\\${electron.app.getName()}-${electron.app.getVersion()}`;
 createDir(temp);
 console.log('tmp',temp);
-var tmpMusic;
-/*fs.readFile("C:\\Users\\maela\\Documents\\GitHub\\Daft-Project\\folder\\Audio, Video, Disco - EP\\01 Audio, Video, Disco. (Para One Remix)", (err,data)=>{
-  fs.writeFileSync("C:\\Users\\maela\\Documents\\GitHub\\Daft-Project\\folder\\output\\test.mp3", data, 'utf8');
-});*/
 
-fs.createReadStream("C:\\Users\\maela\\Documents\\GitHub\\Daft-Project\\folder\\Audio, Video, Disco - EP\\01 Audio, Video, Disco. (Para One Remix).mp3").pipe(fs.createWriteStream("C:\\Users\\maela\\Documents\\GitHub\\Daft-Project\\folder\\output\\test.mp3"));
+//fs.createReadStream("C:\\Users\\maela\\Documents\\GitHub\\Daft-Project\\folder\\Audio, Video, Disco - EP\\01 Audio, Video, Disco. (Para One Remix).mp3", {autoClose: true}).pipe(fs.createWriteStream("C:\\Users\\maela\\Documents\\GitHub\\Daft-Project\\folder\\output\\test.mp3"));
 
 function createDir (dirPath) {
   try {
@@ -100,12 +96,9 @@ function writeMusics (dir){
     artistDir = digits(artistNumber);
     createDir(`${newDir}\\${artistDir}`)
     for (var album in index[artist]) {
-      //createDir(`${newDir}\\${artistDir}\\${album}`)
       for (var track in index[artist][album]) {
-        console.log(`${album} track:${track}`)
         trackNumber++;
-        //fs.copyFileSync(index[artist][album][track]['path'], `${newDir}\\${artistDir}\\${digits100(trackNumber)}.mp3`);
-        fs.copyFileSync("C:\\Users\\maela\\Documents\\GitHub\\Daft-Project\\folder\\Audio, Video, Disco - EP\\01 Audio, Video, Disco. (Para One Remix).mp3", "C:\\Users\\maela\\Documents\\GitHub\\Daft-Project\\folder\\output\\test.mp3");
+        fs.createReadStream(index[artist][album][track]['path'], {autoClose: true}).pipe(fs.createWriteStream(`${newDir}\\${artistDir}\\${digits100(trackNumber)}.mp3`));
       }
     }
   }
