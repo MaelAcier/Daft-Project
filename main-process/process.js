@@ -41,6 +41,12 @@ var directory = [], index = {}, folder;
 const temp = `${os.tmpdir()}\\${electron.app.getName()}-${electron.app.getVersion()}`;
 createDir(temp);
 console.log('tmp',temp);
+var tmpMusic;
+/*fs.readFile("C:\\Users\\maela\\Documents\\GitHub\\Daft-Project\\folder\\Audio, Video, Disco - EP\\01 Audio, Video, Disco. (Para One Remix)", (err,data)=>{
+  fs.writeFileSync("C:\\Users\\maela\\Documents\\GitHub\\Daft-Project\\folder\\output\\test.mp3", data, 'utf8');
+});*/
+
+fs.createReadStream("C:\\Users\\maela\\Documents\\GitHub\\Daft-Project\\folder\\Audio, Video, Disco - EP\\01 Audio, Video, Disco. (Para One Remix).mp3").pipe(fs.createWriteStream("C:\\Users\\maela\\Documents\\GitHub\\Daft-Project\\folder\\output\\test.mp3"));
 
 function createDir (dirPath) {
   try {
@@ -73,18 +79,41 @@ function listMusics (list){
               else console.log("Cover art added");
             });
           }
-          index[data.album_artist][data.album][data.title]={};
+          /*index[data.album_artist][data.album][data.title]={};
           index[data.album_artist][data.album][data.title]["Path"]=file;
-          index[data.album_artist][data.album][data.title]["Track"]=data.track;
+          index[data.album_artist][data.album][data.title]["Track"]=data.track;*/
+          index[data.album_artist][data.album][data.track]={};
+          index[data.album_artist][data.album][data.track]["title"]=data.title;
+          index[data.album_artist][data.album][data.track]["path"]=file;
         }
       });
   });
 }
 
 function writeMusics (dir){
-  const newDir = `${dir}\\output`
+  const newDir = `${dir}\\output`;
+  var artistNumber = 0, trackNumber = 0, artistDir;
   createDir(newDir)
-  for (var id in index) { // On stocke l'identifiant dans « id » pour parcourir l'objet « family »
-    createDir(`${newDir}\\${id}`)
+  for (var artist in index) { // On stocke l'identifiant dans « id » pour parcourir l'objet « family »
+    artistNumber++;
+    trackNumber = 0;
+    artistDir = digits(artistNumber);
+    createDir(`${newDir}\\${artistDir}`)
+    for (var album in index[artist]) {
+      //createDir(`${newDir}\\${artistDir}\\${album}`)
+      for (var track in index[artist][album]) {
+        console.log(`${album} track:${track}`)
+        trackNumber++;
+        //fs.copyFileSync(index[artist][album][track]['path'], `${newDir}\\${artistDir}\\${digits100(trackNumber)}.mp3`);
+        fs.copyFileSync("C:\\Users\\maela\\Documents\\GitHub\\Daft-Project\\folder\\Audio, Video, Disco - EP\\01 Audio, Video, Disco. (Para One Remix).mp3", "C:\\Users\\maela\\Documents\\GitHub\\Daft-Project\\folder\\output\\test.mp3");
+      }
+    }
   }
+}
+
+function digits(n) {
+  return (n < 10 ? '0' : '') + n;
+}
+function digits100(n) {
+  return (n < 10 ? '00' : n < 100 ? '0' : '' ) + n;
 }
