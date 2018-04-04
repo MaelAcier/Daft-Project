@@ -19,7 +19,7 @@ ipc.on('open-file-dialog', (event,args)=> {
       }
       console.log(folder);
       listFiles(folder)
-      console.log(directory);
+      //console.log(directory);
       event.sender.send('selected-directory', folder, directory.length)
       listMusics(directory);
     }
@@ -27,12 +27,16 @@ ipc.on('open-file-dialog', (event,args)=> {
 });
 
 ipc.on('submit', (event)=> {
-      console.log('artists:',index);
+      /*console.log('artists:',index);
         console.log('artists2:',index["Justice"]);
         console.log('single',Object.keys(index));
         for (var id in index) { // On stocke l'identifiant dans « id » pour parcourir l'objet « family »
             console.log(id,'UNDERSINGLE',index[id]);
-        }
+        }*/
+        newFolder = folder.split('\\');
+        console.log(newFolder);
+        newFolder.pop();
+        folder = newFolder.join('\\');
         writeMusics(folder);
 });
   
@@ -41,16 +45,6 @@ var directory = [], index = {}, folder;
 const temp = `${os.tmpdir()}\\${electron.app.getName()}-${electron.app.getVersion()}`;
 createDir(temp);
 console.log('tmp',temp);
-
-//fs.createReadStream("C:\\Users\\maela\\Documents\\GitHub\\Daft-Project\\folder\\Audio, Video, Disco - EP\\01 Audio, Video, Disco. (Para One Remix).mp3", {autoClose: true}).pipe(fs.createWriteStream("C:\\Users\\maela\\Documents\\GitHub\\Daft-Project\\folder\\output\\test.mp3"));
-
-function createDir (dirPath) {
-  try {
-    fs.mkdirSync(dirPath)
-  } catch (err) {
-    if (err.code !== 'EEXIST') throw err
-  }
-}
 
 function listFiles(dir){
   //directory = glob.sync(path.join(dir, '**/@(*.mp3|*.wav)'))
@@ -75,9 +69,6 @@ function listMusics (list){
               else console.log("Cover art added");
             });
           }
-          /*index[data.album_artist][data.album][data.title]={};
-          index[data.album_artist][data.album][data.title]["Path"]=file;
-          index[data.album_artist][data.album][data.title]["Track"]=data.track;*/
           index[data.album_artist][data.album][data.track]={};
           index[data.album_artist][data.album][data.track]["title"]=data.title;
           index[data.album_artist][data.album][data.track]["path"]=file;
@@ -87,18 +78,25 @@ function listMusics (list){
 }
 
 function writeMusics (dir){
-  const newDir = `${dir}\\output`;
-  var artistNumber = 0, trackNumber = 0, artistDir;
-  createDir(newDir)
-  for (var artist in index) { // On stocke l'identifiant dans « id » pour parcourir l'objet « family »
+  var newDir = `${dir}\\output-`;
+  var artistNumber = 0, trackNumber = 0, artistDir, trackDir;
+  newDir = fs.mkdtempSync(newDir);
+  var indexStream = fs.createWriteStream(`${newDir}\\index.txt`, {flags: 'a', autoClose: true});// 'a' means appending (old data will be preserved
+  for (var artist in index) {
     artistNumber++;
     trackNumber = 0;
     artistDir = digits(artistNumber);
     createDir(`${newDir}\\${artistDir}`)
+    indexStream.write(`${artist}\n`);
+    indexStream.write(`\\${artistDir}\n`);
     for (var album in index[artist]) {
+      indexStream.write(`\t${album}\n`);
       for (var track in index[artist][album]) {
         trackNumber++;
-        fs.createReadStream(index[artist][album][track]['path'], {autoClose: true}).pipe(fs.createWriteStream(`${newDir}\\${artistDir}\\${digits100(trackNumber)}.mp3`));
+        trackDir = digits100(trackNumber);
+        fs.createReadStream(index[artist][album][track]['path'], {autoClose: true}).pipe(fs.createWriteStream(`${newDir}\\${artistDir}\\${trackDir}.mp3`));
+        indexStream.write(`\t\t${index[artist][album][track]['title']}\n`);
+        indexStream.write(`\t\t\\${trackDir}\n`);
       }
     }
   }
@@ -109,4 +107,12 @@ function digits(n) {
 }
 function digits100(n) {
   return (n < 10 ? '00' : n < 100 ? '0' : '' ) + n;
+}
+
+function createDir (dirPath) {
+  try {
+    fs.mkdirSync(dirPath)
+  } catch (err) {
+    if (err.code !== 'EEXIST') throw err
+  }
 }
