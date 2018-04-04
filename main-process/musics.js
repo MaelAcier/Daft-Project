@@ -5,6 +5,7 @@ const ffmetadata = require ("ffmetadata");
 const electron = require('electron')
 const ipc = require('electron').ipcMain;
 const {dialog, app} = require('electron');
+const lastfm = require('./last-fm.js');
 
 
 ipc.on('open-file-dialog', (event,args)=> {
@@ -33,18 +34,25 @@ ipc.on('submit', (event)=> {
         for (var id in index) { // On stocke l'identifiant dans « id » pour parcourir l'objet « family »
             console.log(id,'UNDERSINGLE',index[id]);
         }*/
+        console.log(summary);
         newFolder = folder.split('\\');
         console.log(newFolder);
         newFolder.pop();
         folder = newFolder.join('\\');
         writeMusics(folder);
 });
-  
-var directory = [], index = {}, folder;
+
+ipc.on('summary', (artist,bio)=> {
+    summary[artist] = bio;
+});
+
+ 
+var directory = [], index = {}, summary = {}, folder;
 
 const temp = `${os.tmpdir()}\\${electron.app.getName()}-${electron.app.getVersion()}`;
 createDir(temp);
 console.log('tmp',temp);
+
 
 function listFiles(dir){
   //directory = glob.sync(path.join(dir, '**/@(*.mp3|*.wav)'))
@@ -58,6 +66,7 @@ function listMusics (list){
         else {
           if (!Object.keys(index).includes(data.album_artist)){
             index[data.album_artist]={};
+            summary[data.album_artist] = lastfm.artist(data.album_artist);
           }
           if (!Object.keys(index[data.album_artist]).includes(data.album)){
             index[data.album_artist][data.album]={}; 
@@ -70,8 +79,8 @@ function listMusics (list){
             });
           }
           index[data.album_artist][data.album][data.track]={};
-          index[data.album_artist][data.album][data.track]["title"]=data.title;
-          index[data.album_artist][data.album][data.track]["path"]=file;
+          index[data.album_artist][data.album][data.track].title=data.title;
+          index[data.album_artist][data.album][data.track].path=file;
         }
       });
   });
@@ -94,8 +103,8 @@ function writeMusics (dir){
       for (var track in index[artist][album]) {
         trackNumber++;
         trackDir = digits100(trackNumber);
-        fs.createReadStream(index[artist][album][track]['path'], {autoClose: true}).pipe(fs.createWriteStream(`${newDir}\\${artistDir}\\${trackDir}.mp3`));
-        indexStream.write(`\t\t${index[artist][album][track]['title']}\n`);
+        fs.createReadStream(index[artist][album][track].path, {autoClose: true}).pipe(fs.createWriteStream(`${newDir}\\${artistDir}\\${trackDir}.mp3`));
+        indexStream.write(`\t\t${index[artist][album][track].title}\n`);
         indexStream.write(`\t\t\\${trackDir}\n`);
       }
     }
