@@ -1,11 +1,11 @@
-const ipc = require('electron').ipcMain;
 const os = require('os');
-//const path = require('path');
 const fs = require('fs');
 const glob = require('glob');
-const electron = require('electron')
-const {dialog, app} = require('electron');
 const ffmetadata = require ("ffmetadata");
+const electron = require('electron')
+const ipc = require('electron').ipcMain;
+const {dialog, app} = require('electron');
+
 
 ipc.on('open-file-dialog', (event,args)=> {
   dialog.showOpenDialog({

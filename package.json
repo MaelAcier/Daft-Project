@@ -13,20 +13,21 @@
     "url": "https://github.com/owner/project"
   },
   "devDependencies": {
-    "electron": "latest"
+    "electron": "latest",
+    "last-fm": "^5.2.0"
   },
   "keywords": [
     "Daft Punk",
     "Music"
   ],
   "author": {
-    "name" : "Maël Acier",
-    "email" : "contact@github.com",
-    "url" : "http://github.com"
+    "name": "Maël Acier",
+    "email": "contact@github.com",
+    "url": "http://github.com"
   },
   "bugs": {
-    "url" : "https://github.com/owner/project/issues",
-    "email" : "project@hostname.com"
+    "url": "https://github.com/owner/project/issues",
+    "email": "project@hostname.com"
   },
   "homepage": "http://github.com",
   "license": "UNLICENSED"
