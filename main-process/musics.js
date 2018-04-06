@@ -30,9 +30,12 @@ ipc.on('open-file-dialog', (event,args)=> {
       listFiles(folder)
       //console.log(directory);
       event.sender.send('selected-directory', folder, directory.length)
-      listMusics(directory);
     }
   })
+});
+
+ipc.on('loading', (event)=> {
+  listMusics(directory,event);
 });
 
 ipc.on('submit', (event)=> {
@@ -86,7 +89,7 @@ function listFiles(dir){
   directory = glob.sync(`${dir}/**/@(*.mp3|*.wav)`);
 }
 
-function listMusics (list){
+function listMusics (list,event){
   var advancement = 0;
   list.forEach((file)=>{
       ffmetadata.read(file, (err,data)=>{
@@ -119,6 +122,7 @@ function listMusics (list){
           //console.log(advancement);
           loading = advancement*100/directory.length;
           console.log(`${loading}%`);
+          event.sender.send('loading', loading)
         }
       });
   });
