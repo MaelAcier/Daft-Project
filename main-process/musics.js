@@ -10,9 +10,10 @@ const {dialog, app} = require('electron');
 
 const lastfm = new LastFM('e01234609d70b34055b389734707ac0a')
 const temp = `${os.tmpdir()}\\${electron.app.getName()}-${electron.app.getVersion()}`;
+const LogStream = fs.createWriteStream(`.\\logs\\${Date.now()}.log`, {flags: 'a'});
 var directory = [], error = [], index = {}, summary = {}, folder, loading;
 
-
+Log(`Répertoire temporaire: ${temp}`);
 createDir(temp);
 console.log('tmp',temp);
 
@@ -22,13 +23,14 @@ ipc.on('open-file-dialog', (event,args)=> {
   }, function (files) {
     if (files) {
       folder=files[0];
+      Log(`Répertoire musical: ${folder}`);
       if (args='select'){
+        Log(`Sélection unique.`);
         directory = [];
         index = {};
       }
-      console.log(folder);
-      listFiles(folder)
-      //console.log(directory);
+      listFiles(folder);
+      Log(`Il y a ${directory.length} musiques`);
       event.sender.send('selected-directory', folder, directory.length)
     }
   })
@@ -36,57 +38,44 @@ ipc.on('open-file-dialog', (event,args)=> {
 
 ipc.on('loading', (event)=> {
   listMusics(directory,event);
+  Log(`Analyse des musiques`);
 });
 
 ipc.on('submit', (event)=> {
-        //console.log(summary);
-        newFolder = folder.split('\\');
-        console.log(newFolder);
-        newFolder.pop();
-        folder = newFolder.join('\\');
-        writeMusics(folder);
+  //console.log(summary);
+  newFolder = folder.split('\\');
+  console.log(newFolder);
+  newFolder.pop();
+  output= newFolder.join('\\');
+  writeMusics(output);
+  Log(`Export des musiques vers ${output}`);
 });
 
 function artistRequest (artist) {   
   lastfm.artistInfo({ name: artist }, (err, data) => {
-    if (err) console.error(err)
+    if (err) Log(`Lastfm: ${err}`,2);
     else {
       console.log('data');
+      Log(`Requête: ${artist}`);
       summary[artist] = data.summary;
       download(data.images[data.images.length-1],`${temp}\\${artist}.png`);
     }
   });
 }
 
-//artistRequest('Daft Punk');
-//albumRequest('Random Access Memories', 'Daft Punk');
-
-
 function albumRequest (album, artist) {
   lastfm.albumInfo({ name: album , artistName: artist}, (err, data) => {
-    if (err) console.error(err)
+    if (err) Log(`Lastfm: ${err}`,2);
     else {
-      //console.log(data);
+      Log(`Requête: ${album} \\ ${artist}`);
       download(data.images[data.images.length-1],`${temp}\\${artist}\\${album}.png`);
     }
   })
 }
 
-
-
-function download (url, dest) {
-  var file = fs.createWriteStream(dest);
-  var request = https.get(url, function(response) {
-    response.pipe(file);
-    file.on('finish', function() {
-      file.close();
-    });
-  });
-}
-
 function listFiles(dir){
-  //directory = glob.sync(path.join(dir, '**/@(*.mp3|*.wav)'))
   directory = glob.sync(`${dir}/**/@(*.mp3|*.wav)`);
+  Log(`Liste des fichiers: ${directory.join('\n')}`);
 }
 
 function listMusics (list,event){
@@ -95,6 +84,7 @@ function listMusics (list,event){
       ffmetadata.read(file, (err,data)=>{
         if (err) {
           console.error("Error reading metadata", err);
+          Log(`Lecture des metadata: ${err} pour ${file}`,2);
           error.push(file);
         }
         else {
@@ -110,9 +100,11 @@ function listMusics (list,event){
             ffmetadata.read(file, {coverPath: [`${coverpath}\\${data.album}.jpg`]}, (err)=>{
               if (err) {
                 console.error("Error writing cover art");
+                Log(`Pochette (${data.album}): ${err}`,1);
                 albumRequest(data.album, data.album_artist);
               }
               else console.log("Cover art added");
+              Log(`Pochette ajoutée: ${data.album}`);
             });
           }
           index[data.album_artist][data.album][data.track]={};
@@ -120,8 +112,9 @@ function listMusics (list,event){
           index[data.album_artist][data.album][data.track].path=file;
           advancement++;
           //console.log(advancement);
-          loading = advancement*100/directory.length;
+          loading = Math.round(advancement*100/directory.length);
           console.log(`${loading}%`);
+          Log(`Avancement de l'analyse: ${loading}%`);
           event.sender.send('loading', loading)
         }
       });
@@ -132,6 +125,7 @@ function writeMusics (dir){
   var newDir = `${dir}\\output-`;
   var artistNumber = 0, trackNumber = 0, artistDir, trackDir;
   newDir = fs.mkdtempSync(newDir);
+  Log(`Dossier de sortie: ${newDir}`);
   var indexStream = fs.createWriteStream(`${newDir}\\index.txt`, {flags: 'a', autoClose: true});// 'a' means appending (old data will be preserved
   for (var artist in index) {
     artistNumber++;
@@ -153,6 +147,9 @@ function writeMusics (dir){
   }
 }
 
+
+
+
 function digits(n) {
   return (n < 10 ? '0' : '') + n;
 }
@@ -163,7 +160,31 @@ function digits100(n) {
 function createDir (dirPath) {
   try {
     fs.mkdirSync(dirPath)
+    Log(`Dossier créé: ${dirPath}`)
   } catch (err) {
-    if (err.code !== 'EEXIST') throw err
+    if (err.code == 'EEXIST') Log(`Le dossier existe déja: ${dirPath}`,1)
+    else throw err
   }
+}
+
+function download (url, dest) {
+  var file = fs.createWriteStream(dest);
+  Log(`Téléchargement: ${url} vers ${dest}`);
+  var request = https.get(url, function(response) {
+    response.pipe(file);
+    file.on('finish', function() {
+      Log(`Fin de téléchargement: ${url}`);
+      file.close();
+    });
+  });
+}
+
+function Log (args, level){
+  var logLevel;
+  var utc = new Date().toJSON().slice(0,23).replace(/T/,' ');
+  if (level===undefined) logLevel = '[INFO]'
+  else if (level===1) logLevel = '[WARN]'
+  else if (level===2) logLevel = '[ERROR]'
+  else logLevel = '[DEBUG]'
+  LogStream.write(`${utc} ${logLevel} ${args}\n`)
 }
