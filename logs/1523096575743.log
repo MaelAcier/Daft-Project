@@ -1,0 +1,77 @@
+2018-04-07 10:22:55.744 [INFO] Répertoire temporaire: C:\Users\MAL~1\AppData\Local\Temp\Daft Manager-0.2.0
+2018-04-07 10:22:55.747 [WARN] Le dossier existe déja: C:\Users\MAL~1\AppData\Local\Temp\Daft Manager-0.2.0
+2018-04-07 10:23:06.398 [INFO] Répertoire musical: D:\Maël\Documents\GitHub\Daft-Project\folder
+2018-04-07 10:23:06.398 [INFO] Sélection unique.
+2018-04-07 10:23:06.568 [INFO] Liste des fichiers: D:/Maël/Documents/GitHub/Daft-Project/folder/Audio, Video, Disco - EP/01 Audio, Video, Disco. (Para One Remix).mp3
+D:/Maël/Documents/GitHub/Daft-Project/folder/Audio, Video, Disco - EP/02 Audio, Video, Disco. (Mickey Moonlight Remix).mp3
+D:/Maël/Documents/GitHub/Daft-Project/folder/Civilization/1 - Civilization.mp3
+D:/Maël/Documents/GitHub/Daft-Project/folder/Civilization/2 - Civilization (Demo Version).mp3
+D:/Maël/Documents/GitHub/Daft-Project/folder/Civilization/3 - Civilization (Mr. Oizo Remix).mp3
+D:/Maël/Documents/GitHub/Daft-Project/folder/Civilization/4 - Civilization (The Fucking Champs Remix).mp3
+D:/Maël/Documents/GitHub/Daft-Project/folder/Harder Better Faster Stronger/A1 - Harder Better Faster Stronger (Alive Radio Edit 2007).mp3
+D:/Maël/Documents/GitHub/Daft-Project/folder/Harder Better Faster Stronger/A2 - Harder Better Faster Stronger (Alive Extended 2007).mp3
+D:/Maël/Documents/GitHub/Daft-Project/folder/Harder Better Faster Stronger/B1 - Harder Better Faster Stronger.mp3
+D:/Maël/Documents/GitHub/Daft-Project/folder/Harder Better Faster Stronger/B2 - Harder Better Faster Stronger (Breakers Break Remix).mp3
+D:/Maël/Documents/GitHub/Daft-Project/folder/Harder Better Faster Stronger/B3 - Harder Better Faster Stronger (The Neptunes Remix).mp3
+D:/Maël/Documents/GitHub/Daft-Project/folder/Harder Better Faster Stronger/B4 - Harder Better Faster Stronger ( Pete Hellers Stylus).mp3
+D:/Maël/Documents/GitHub/Daft-Project/folder/Revolution 909/1 - Revolution 909 (Radio Edit).mp3
+D:/Maël/Documents/GitHub/Daft-Project/folder/Revolution 909/2 - Revolution 909 (Roger Sanchez Remix).mp3
+D:/Maël/Documents/GitHub/Daft-Project/folder/Revolution 909/3 - Revolution 909 (Revolution Accapella).mp3
+D:/Maël/Documents/GitHub/Daft-Project/folder/Revolution 909/4 - Revolution 909.mp3
+2018-04-07 10:23:06.568 [INFO] Il y a 16 musiques
+2018-04-07 10:23:08.449 [INFO] Analyse des musiques
+2018-04-07 10:23:10.754 [INFO] Dossier créé: C:\Users\MAL~1\AppData\Local\Temp\Daft Manager-0.2.0\Justice
+2018-04-07 10:23:10.759 [INFO] Avancement de l'analyse: 6%
+2018-04-07 10:23:10.764 [INFO] Dossier créé: C:\Users\MAL~1\AppData\Local\Temp\Daft Manager-0.2.0\Daft Punk
+2018-04-07 10:23:10.773 [INFO] Avancement de l'analyse: 13%
+2018-04-07 10:23:10.792 [INFO] Avancement de l'analyse: 19%
+2018-04-07 10:23:11.002 [INFO] Avancement de l'analyse: 25%
+2018-04-07 10:23:11.002 [INFO] Avancement de l'analyse: 31%
+2018-04-07 10:23:11.005 [WARN] Le dossier existe déja: C:\Users\MAL~1\AppData\Local\Temp\Daft Manager-0.2.0\Daft Punk
+2018-04-07 10:23:11.039 [INFO] Avancement de l'analyse: 38%
+2018-04-07 10:23:11.039 [INFO] Avancement de l'analyse: 44%
+2018-04-07 10:23:11.039 [INFO] Avancement de l'analyse: 50%
+2018-04-07 10:23:11.040 [INFO] Avancement de l'analyse: 56%
+2018-04-07 10:23:11.040 [INFO] Avancement de l'analyse: 63%
+2018-04-07 10:23:11.040 [INFO] Avancement de l'analyse: 69%
+2018-04-07 10:23:11.040 [INFO] Avancement de l'analyse: 75%
+2018-04-07 10:23:11.041 [INFO] Avancement de l'analyse: 81%
+2018-04-07 10:23:11.041 [INFO] Avancement de l'analyse: 88%
+2018-04-07 10:23:11.043 [WARN] Le dossier existe déja: C:\Users\MAL~1\AppData\Local\Temp\Daft Manager-0.2.0\Justice
+2018-04-07 10:23:11.125 [INFO] Avancement de l'analyse: 94%
+2018-04-07 10:23:11.126 [INFO] Avancement de l'analyse: 100%
+2018-04-07 10:23:11.185 [WARN] Pochette (Harder Better Faster Stronger): Error: ffmpeg version N-90306-g688060fbb7 Copyright (c) 2000-2018 the FFmpeg developers
+  built with gcc 7.3.0 (GCC)
+  configuration: --enable-gpl --enable-version3 --enable-sdl2 --enable-bzlib --enable-fontconfig --enable-gnutls --enable-iconv --enable-libass --enable-libbluray --enable-libfreetype --enable-libmp3lame --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libopus --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libtheora --enable-libtwolame --enable-libvpx --enable-libwavpack --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxml2 --enable-libzimg --enable-lzma --enable-zlib --enable-gmp --enable-libvidstab --enable-libvorbis --enable-libvo-amrwbenc --enable-libmysofa --enable-libspeex --enable-libxvid --enable-libmfx --enable-amf --enable-ffnvcodec --enable-cuvid --enable-d3d11va --enable-nvenc --enable-nvdec --enable-dxva2 --enable-avisynth
+  libavutil      56.  9.100 / 56.  9.100
+  libavcodec     58. 14.100 / 58. 14.100
+  libavformat    58. 10.100 / 58. 10.100
+  libavdevice    58.  2.100 / 58.  2.100
+  libavfilter     7. 13.100 /  7. 13.100
+  libswscale      5.  0.102 /  5.  0.102
+  libswresample   3.  0.101 /  3.  0.101
+  libpostproc    55.  0.100 / 55.  0.100
+Input #0, mp3, from 'D:/Maël/Documents/GitHub/Daft-Project/folder/Harder Better Faster Stronger/A2 - Harder Better Faster Stronger (Alive Extended 2007).mp3':
+  Metadata:
+    album           : Harder Better Faster Stronger
+    artist          : Daft Punk
+    album_artist    : Daft Punk
+    disc            : 1
+    title           : Harder Better Faster Stronger (Alive Extended 2007)
+    track           : 2
+    date            : 2010
+  Duration: 00:04:43.12, start: 0.025057, bitrate: 320 kb/s
+    Stream #0:0: Audio: mp3, 44100 Hz, stereo, s16p, 320 kb/s
+    Metadata:
+      encoder         : Lavc56.19
+Output #0, image2, to 'C:\Users\MAL~1\AppData\Local\Temp\Daft Manager-0.2.0\Daft Punk\Harder Better Faster Stronger.jpg':
+Output file #0 does not contain any stream
+
+2018-04-07 10:23:11.186 [INFO] Pochette ajoutée: Harder Better Faster Stronger
+2018-04-07 10:23:11.826 [INFO] Pochette ajoutée: Audio, Video, Disco. - EP
+2018-04-07 10:23:11.936 [INFO] Pochette ajoutée: Civilization
+2018-04-07 10:23:12.175 [INFO] Pochette ajoutée: Revolution 909
+2018-04-07 10:23:13.632 [INFO] Dossier de sortie: D:\Maël\Documents\GitHub\Daft-Project\output-wi52vF
+2018-04-07 10:23:13.634 [INFO] Dossier créé: D:\Maël\Documents\GitHub\Daft-Project\output-wi52vF\01
+2018-04-07 10:23:13.638 [INFO] Dossier créé: D:\Maël\Documents\GitHub\Daft-Project\output-wi52vF\02
+2018-04-07 10:23:13.640 [INFO] Export des musiques vers D:\Maël\Documents\GitHub\Daft-Project

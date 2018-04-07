@@ -1,10 +1,10 @@
 const path = require('path')
 const glob = require('glob')
-const os = require('os');
-const fs = require('fs');
+const os = require('os')
+const fs = require('fs')
 const electron = require('electron')
 const {app, BrowserWindow} = require('electron')
-//const autoUpdater = require('./auto-updater')
+// const autoUpdater = require('./auto-updater')
 
 const debug = /--debug/.test(process.argv[2])
 
@@ -47,17 +47,17 @@ function initialize () {
 
   app.on('ready', () => {
     createWindow()
-    //autoUpdater.initialize()
+    // autoUpdater.initialize()
   })
 
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
-      /*const temp = `${os.tmpdir()}\\${electron.app.getName()}-${electron.app.getVersion()}`;
+      /* const temp = `${os.tmpdir()}\\${electron.app.getName()}-${electron.app.getVersion()}`;
       try {
         fs.rmdirSync(temp);
       } catch (err) {
         if (err.code !== 'EEXIST') throw err
-      }*/
+      } */
       app.quit()
     }
   })
@@ -91,11 +91,11 @@ function makeSingleInstance () {
 function loadDemos () {
   const files = glob.sync(path.join(__dirname, 'main-process/**/*.js'))
   files.forEach((file) => { require(file) })
-  //autoUpdater.updateMenu()
+  // autoUpdater.updateMenu()
 }
 
 // Handle Squirrel on Windows startup events
-/*switch (process.argv[1]) {
+/* switch (process.argv[1]) {
   case '--squirrel-install':
     autoUpdater.createShortcut(() => { app.quit() })
     break
@@ -108,5 +108,5 @@ function loadDemos () {
     break
   default:
     initialize()
-}*/
+} */
 initialize()

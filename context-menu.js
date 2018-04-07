@@ -8,7 +8,7 @@ const app = electron.app
 const menu = new Menu()
 menu.append(new MenuItem({ label: 'Hello' }))
 menu.append(new MenuItem({ type: 'separator' }))
-menu.append(new MenuItem({ label: 'Electron', type: 'checkbox', checked: true , click () { require('electron').shell.openExternal('https://electronjs.org') }}))
+menu.append(new MenuItem({ label: 'Electron', type: 'checkbox', checked: true, click () { require('electron').shell.openExternal('https://electronjs.org') }}))
 
 app.on('browser-window-created', function (event, win) {
   win.webContents.on('context-menu', function (e, params) {
