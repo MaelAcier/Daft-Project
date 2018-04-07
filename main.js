@@ -1,8 +1,5 @@
 const path = require('path')
 const glob = require('glob')
-const os = require('os')
-const fs = require('fs')
-const electron = require('electron')
 const {app, BrowserWindow} = require('electron')
 // const autoUpdater = require('./auto-updater')
 
@@ -52,12 +49,6 @@ function initialize () {
 
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
-      /* const temp = `${os.tmpdir()}\\${electron.app.getName()}-${electron.app.getVersion()}`;
-      try {
-        fs.rmdirSync(temp);
-      } catch (err) {
-        if (err.code !== 'EEXIST') throw err
-      } */
       app.quit()
     }
   })

@@ -1,4 +1,4 @@
-const os = NodeRequire('os')
+const os = require('os')
 const fs = require('fs')
 const glob = require('glob')
 const https = require('https')
@@ -6,12 +6,17 @@ const LastFM = require('last-fm')
 const ffmetadata = require('ffmetadata')
 const electron = require('electron')
 const ipc = require('electron').ipcMain
-const {dialog, app} = require('electron')
+const {dialog} = require('electron')
 
 const lastfm = new LastFM('e01234609d70b34055b389734707ac0a')
 const temp = `${os.tmpdir()}\\${electron.app.getName()}-${electron.app.getVersion()}`
 const LogStream = fs.createWriteStream(`.\\logs\\${Date.now()}.log`, {flags: 'a'})
-var directory = [], error = [], index = {}, summary = {}, folder, loading
+var directory = [],
+  error = [],
+  index = {},
+  summary = {},
+  folder,
+  loading
 
 Log(`Répertoire temporaire: ${temp}`)
 createDir(temp)
@@ -24,7 +29,7 @@ ipc.on('open-file-dialog', (event, args) => {
     if (files) {
       folder = files[0]
       Log(`Répertoire musical: ${folder}`)
-      if (args = 'select') {
+      if (args === 'select') {
         Log(`Sélection unique.`)
         directory = []
         index = {}
@@ -42,7 +47,7 @@ ipc.on('loading', (event) => {
 })
 
 ipc.on('submit', (event) => {
-  // console.log(summary);
+  let newFolder, output
   newFolder = folder.split('\\')
   console.log(newFolder)
   newFolder.pop()
@@ -64,7 +69,7 @@ function artistRequest (artist) {
 }
 
 function albumRequest (album, artist) {
-  lastfm.albumInfo({ name: album, artistName: artist}, (err, data) => {
+  lastfm.albumInfo({name: album, artistName: artist}, (err, data) => {
     if (err) Log(`Lastfm: ${err}`, 2)
     else {
       Log(`Requête: ${album} \\ ${artist}`)
@@ -121,7 +126,10 @@ function listMusics (list, event) {
 
 function writeMusics (dir) {
   var newDir = `${dir}\\output-`
-  var artistNumber = 0, trackNumber = 0, artistDir, trackDir
+  var artistNumber = 0,
+    trackNumber = 0,
+    artistDir,
+    trackDir
   newDir = fs.mkdtempSync(newDir)
   Log(`Dossier de sortie: ${newDir}`)
   var indexStream = fs.createWriteStream(`${newDir}\\index.txt`, {flags: 'a', autoClose: true})// 'a' means appending (old data will be preserved
@@ -157,7 +165,7 @@ function createDir (dirPath) {
     fs.mkdirSync(dirPath)
     Log(`Dossier créé: ${dirPath}`)
   } catch (err) {
-    if (err.code == 'EEXIST') Log(`Le dossier existe déja: ${dirPath}`, 1)
+    if (err.code === 'EEXIST') Log(`Le dossier existe déja: ${dirPath}`, 1)
     else throw err
   }
 }
@@ -165,7 +173,7 @@ function createDir (dirPath) {
 function download (url, dest) {
   var file = fs.createWriteStream(dest)
   Log(`Téléchargement: ${url} vers ${dest}`)
-  var request = https.get(url, function (response) {
+  https.get(url, function (response) {
     response.pipe(file)
     file.on('finish', function () {
       Log(`Fin de téléchargement: ${url}`)
