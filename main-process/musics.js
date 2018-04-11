@@ -1,5 +1,6 @@
 const os = require('os')
 const fs = require('fs')
+const path = require('path')
 const glob = require('glob')
 const https = require('https')
 const LastFM = require('last-fm')
@@ -7,15 +8,11 @@ const ffmetadata = require('ffmetadata')
 const electron = require('electron')
 const ipc = require('electron').ipcMain
 const {dialog} = require('electron')
+const logging = require('./logging.js')
 
 const lastfm = new LastFM('e01234609d70b34055b389734707ac0a')
 const temp = `${os.tmpdir()}\\${electron.app.getName()}-${electron.app.getVersion()}`
-try {
-  fs.mkdirSync("./logs")
-} catch (err) {
-  if (err.code !== 'EEXIST') throw err
-}
-const LogStream = fs.createWriteStream(`.\\logs\\${Date.now()}.log`, {flags: 'a'})
+
 var directory = [],
   error = [],
   index = {},
@@ -189,11 +186,5 @@ function download (url, dest) {
 }
 
 function Log (args, level) {
-  var logLevel
-  var utc = new Date().toJSON().slice(0, 23).replace(/T/, ' ')
-  if (level === undefined) logLevel = '[INFO]'
-  else if (level === 1) logLevel = '[WARN]'
-  else if (level === 2) logLevel = '[ERROR]'
-  else logLevel = '[DEBUG]'
-  LogStream.write(`${utc} ${logLevel} ${args}\n`)
+  logging.write(__filename, args, level)
 }
