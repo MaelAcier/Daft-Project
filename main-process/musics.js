@@ -10,6 +10,11 @@ const {dialog} = require('electron')
 
 const lastfm = new LastFM('e01234609d70b34055b389734707ac0a')
 const temp = `${os.tmpdir()}\\${electron.app.getName()}-${electron.app.getVersion()}`
+try {
+  fs.mkdirSync("./logs")
+} catch (err) {
+  if (err.code !== 'EEXIST') throw err
+}
 const LogStream = fs.createWriteStream(`.\\logs\\${Date.now()}.log`, {flags: 'a'})
 var directory = [],
   error = [],
@@ -20,6 +25,7 @@ var directory = [],
 
 Log(`Répertoire temporaire: ${temp}`)
 createDir(temp)
+
 console.log('tmp', temp)
 
 ipc.on('open-file-dialog', (event, args) => {
