@@ -7,6 +7,6 @@ Array.prototype.forEach.call(links, (link) => {
   if (link.href.match('about.html')) {
     document.querySelector('body').appendChild(clone)
   } else {
-    document.querySelector('.content').appendChild(clone)
+    DocumentFragment.querySelector('.sections').appendChild(clone)
   }
 })

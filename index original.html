@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="assets/css/uikit.min.css" />
+        <script src="assets/js/uikit.min.js"></script>
+        <script src="assets/js/uikit-icons.min.js"></script>
+  </head>
+  <body>
+        <div class="tm-header">
+                <div uk-sticky="animation: uk-animation-slide-top; sel-target: .uk-navbar-container; cls-active: uk-navbar-sticky; bottom: #scrollup-dropdown">
+                    <nav class="uk-navbar-container">
+                        <div class="uk-container uk-container-expand">
+                            <div uk-navbar>
+                                <div class="uk-navbar-left">
+    
+                                    <a class="uk-navbar-item uk-logo" href="#">Daft Punk Project</a>
+    
+                                    <ul class="uk-navbar-nav">
+                                        <li class="uk-active"><a href="#">choix des musiques</a></li>
+                                        <li>
+                                            <a href="#">Vérification</a>
+                                            <div class="uk-navbar-dropdown">
+                                                <ul class="uk-nav uk-navbar-dropdown-nav">
+                                                    <li class="uk-active"><a href="#">Active</a></li>
+                                                    <li class="uk-parent">
+                                                        <a href="#">Parent</a>
+                                                        <ul class="uk-nav-sub">
+                                                            <li><a href="#">Sub item</a></li>
+                                                            <li><a href="#">Sub item</a></li>
+                                                        </ul>
+                                                    </li>
+                                                    <li class="uk-nav-header">Header</li>
+                                                    <li><a href="#"><span class="uk-margin-small-right" uk-icon="icon: table"></span> Item</a></li>
+                                                    <li><a href="#"><span class="uk-margin-small-right" uk-icon="icon: thumbnails"></span> Item</a></li>
+                                                    <li class="uk-nav-divider"></li>
+                                                    <li><a href="#"><span class="uk-margin-small-right" uk-icon="icon: trash"></span> Item</a></li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <a href="#">Animations</a>
+                                            <div class="uk-navbar-dropdown">
+                                                <ul class="uk-nav uk-navbar-dropdown-nav">
+                                                    <li class="uk-active"><a href="#">Active</a></li>
+                                                    <li class="uk-parent">
+                                                        <a href="#">Parent</a>
+                                                        <ul class="uk-nav-sub">
+                                                            <li><a href="#">Sub item</a></li>
+                                                            <li><a href="#">Sub item</a></li>
+                                                        </ul>
+                                                    </li>
+                                                    <li class="uk-nav-header">Header</li>
+                                                    <li><a href="#"><span class="uk-margin-small-right" uk-icon="icon: table"></span> Item</a></li>
+                                                    <li><a href="#"><span class="uk-margin-small-right" uk-icon="icon: thumbnails"></span> Item</a></li>
+                                                    <li class="uk-nav-divider"></li>
+                                                    <li><a href="#"><span class="uk-margin-small-right" uk-icon="icon: trash"></span> Item</a></li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        <li><a href="#">Guide</a></li>
+                                    </ul>
+    
+                                </div>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+
+      <div class="uk-container uk-container-expand">
+            <div class="uk-section uk-section-default">
+
+            <div uk-grid>
+                <article class="uk-article">
+
+                    <h1 id='select-directory' >Sélectionnez un dossier</h1>
+                    <h2 id='send-directory' >Process</h2>
+
+                    <hr class="uk-divider-small">
+
+                    <p id='selected-file'>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                    <p>Etat</p>
+                    <progress id="progressbar" class="uk-progress" value="0" max="100"></progress>
+                    <div class="uk-margin" uk-margin>
+
+                            <div uk-form-custom="target: true">
+                                <input type="file" id='directory' webkitdirectory>
+                                <input id = 'directoryHolder' class="uk-input uk-form-width-medium" type="text" placeholder="Sélectionner des fichiers" disabled>
+                            </div>
+
+                            <button class="uk-button uk-button-default" id='submit'>Envoyer</button>
+
+                        </div>
+                    </br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br>
+                    <p>We are using node <script>document.write(process.versions.node)</script>,
+                        Chrome <script>document.write(process.versions.chrome)</script>,
+                        and Electron <script>document.write(process.versions.electron)</script>.
+                    </p>
+                </article>
+            </div>
+        </div>
+        </div>
+  </body>  
+    <script>
+    // You can also require other files to run in this process
+    require('./renderer.js')
+  </script>
+</html>
