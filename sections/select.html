@@ -1,7 +1,37 @@
 <template class="task-template">
     <section>
-        <h1 id="testImport1" >TEST</h1>
-        <p id="testImport">Hey</p>
+        <div class="uk-container uk-container-expand">
+            <div class="uk-section uk-section-default">
 
+            <div uk-grid>
+                <article class="uk-article">
+
+                    <h1 id='select-directory' >Sélectionnez un dossier</h1>
+                    <h2 id='send-directory' >Process</h2>
+
+                    <hr class="uk-divider-small">
+
+                    <p id='selected-file'>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                    <p>Etat</p>
+                    <progress id="progressbar" class="uk-progress" value="0" max="100"></progress>
+                    <div class="uk-margin" uk-margin>
+
+                            <div uk-form-custom="target: true">
+                                <input type="file" id='directory' webkitdirectory>
+                                <input id = 'directoryHolder' class="uk-input uk-form-width-medium" type="text" placeholder="Sélectionner des fichiers" disabled>
+                            </div>
+
+                            <button class="uk-button uk-button-default" id='submit'>Envoyer</button>
+
+                        </div>
+                    </br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br>
+                    <p>We are using node <script>document.write(process.versions.node)</script>,
+                        Chrome <script>document.write(process.versions.chrome)</script>,
+                        and Electron <script>document.write(process.versions.electron)</script>.
+                    </p>
+                </article>
+            </div>
+            </div>
+        </div>
     </section>
 </template>

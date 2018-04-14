@@ -22,6 +22,8 @@ var directory = [],
 
 Log(`Répertoire temporaire: ${temp}`)
 createDir(temp)
+const coverPATH = path.join(temp,'/covers')
+createDir(coverPATH)
 
 console.log('tmp', temp)
 
@@ -66,7 +68,7 @@ function artistRequest (artist) {
       console.log('data')
       Log(`Requête: ${artist}`)
       summary[artist] = data.summary
-      download(data.images[data.images.length - 1], `${temp}\\${artist}.png`)
+      download(data.images[data.images.length - 1], `${temp}\\covers\\${artist}.png`)
     }
   })
 }
@@ -76,13 +78,13 @@ function albumRequest (album, artist) {
     if (err) Log(`Lastfm: ${err}`, 2)
     else {
       Log(`Requête: ${album} \\ ${artist}`)
-      download(data.images[data.images.length - 1], `${temp}\\${artist}\\${album}.png`)
+      download(data.images[data.images.length - 1], `${temp}\\covers\\${artist}\\${album}.png`)
     }
   })
 }
 
 function listFiles (dir) {
-  directory = glob.sync(`${dir}/**/@(*.mp3|*.wav)`)
+  directory = glob.sync(path.join(dir,'/**/@(*.mp3|*.wav)'))
   Log(`Liste des fichiers: ${directory.join('\n')}`)
 }
 
@@ -102,7 +104,7 @@ function listMusics (list, event) {
         if (!Object.keys(index[data.album_artist]).includes(data.album)) {
           index[data.album_artist][data.album] = {}
 
-          let coverpath = `${temp}\\${data.album_artist}`
+          let coverpath = `${temp}\\covers\\${data.album_artist}`
           createDir(coverpath)
           ffmetadata.read(file, {coverPath: [`${coverpath}\\${data.album}.jpg`]}, (err) => {
             if (err) {
@@ -148,12 +150,33 @@ function writeMusics (dir) {
       for (var track in index[artist][album]) {
         trackNumber++
         trackDir = digits100(trackNumber)
-        fs.createReadStream(index[artist][album][track].path, {autoClose: true}).pipe(fs.createWriteStream(`${newDir}\\${artistDir}\\${trackDir}.mp3`))
+        copy(index[artist][album][track].path,`${newDir}\\${artistDir}\\${trackDir}.mp3`)
         indexStream.write(`\t\t${index[artist][album][track].title}\n`)
         indexStream.write(`\t\t\\${trackDir}\n`)
       }
     }
   }
+
+  var listCovers = glob.sync(path.join(temp,'covers','/**'))
+  listCovers.forEach(function(file) {
+    var stat = fs.statSync(file);
+    if (stat.isDirectory()) {
+      Array.prototype.diff = function(a) {
+        return this.filter(function(i) {return a.indexOf(i) < 0;});
+      };
+      let folderToCreate = file.split('/')
+      folderToCreate = folderToCreate.diff(temp.split('\\'))
+      folderToCreate = folderToCreate.join('\\')
+      createDir(path.join(newDir,folderToCreate))
+    }
+    else{
+      console.log(file)
+      let fileToCreate = file.split('/')
+      fileToCreate = fileToCreate.diff(temp.split('\\'))
+      fileToCreate = fileToCreate.join('\\')
+      copy(file,path.join(newDir,fileToCreate))
+    }
+});
 }
 
 function digits (n) {
@@ -183,6 +206,9 @@ function download (url, dest) {
       file.close()
     })
   })
+}
+function copy (source, destination) {
+  fs.createReadStream(source, {autoClose: true}).pipe(fs.createWriteStream(destination))
 }
 
 function Log (args, level) {
