@@ -23,6 +23,8 @@ submit.addEventListener('click', function () {
 
 ////////Réponse des canaux///////
 ipc.on('selected-directory', function (event, path, nb) {
+  
+
   document.getElementById('selected-file').innerHTML = 'You selected: ' + path + 'and there are ' + nb
 })
 
