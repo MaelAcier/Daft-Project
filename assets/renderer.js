@@ -8,7 +8,7 @@ document.addEventListener('keydown', function (e) {
   }
 })
 
-///////
+////////
 const links = document.querySelectorAll('link[rel="import"]')
 var pages = {}
 var sectionName
