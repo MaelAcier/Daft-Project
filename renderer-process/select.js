@@ -1,31 +1,65 @@
 const ipc = require('electron').ipcRenderer
 
 const submit = document.getElementById('submit')
-const directory = document.getElementById('directory')
-const directoryHolder = document.getElementById('directoryHolder')
-const selectDirBtn = document.getElementById('select-directory')
-const sendDirBtn = document.getElementById('send-directory')
+const selectDir = document.getElementById('select-directory')
+const addDir = document.getElementById('add-directory')
+const deleteDir = document.getElementById('delete-directory')
+const sendDir = document.getElementById('send-directory')
+const closeDir = document.getElementsByClassName('close-dir')
 const bar = document.getElementById('progressbar')
+const dirList = document.getElementById('directory-list')
 
 
 ///////Détection des actions////////
-selectDirBtn.addEventListener('click', function (event) {
+selectDir.addEventListener('click', function (event) {
   ipc.send('open-file-dialog', 'select')
 })
 
-sendDirBtn.addEventListener('click', function (event) {
+addDir.addEventListener('click', function (event) {
+  ipc.send('open-file-dialog')
+})
+
+deleteDir.addEventListener('click', function (event) {
+  ipc.send('remove-dir')
+  while (dirList.firstChild) {
+    dirList.removeChild(dirList.firstChild);
+  }
+})
+
+sendDir.addEventListener('click', function (event) {
   ipc.send('loading')
 })
+
+document.addEventListener('click', (event) => {
+  if (event.target.parentNode.className=='uk-notification-close close-dir uk-close uk-icon') {
+    var dir = event.target.parentNode.parentNode
+    ipc.send('remove-dir', dir.id)
+    dir.parentNode.removeChild(dir)
+  }
+})
+
+
+/*closeDir.addEventListener('click', function (event) {
+  var dir = document.getElementById(event.target.id)
+  dir.parentNode.removeChild(dir)
+})*/
 
 submit.addEventListener('click', function () {
   ipc.send('submit')
 })
 
+
+
 ////////Réponse des canaux///////
 ipc.on('selected-directory', function (event, path, nb) {
-  
+  deleteDir.removeAttribute('disabled');
+  addDir.removeAttribute('disabled');
 
-  document.getElementById('selected-file').innerHTML = 'You selected: ' + path + 'and there are ' + nb
+  dirList.innerHTML += `<p class="uk-notification-message uk-notification-message-primary" id="${path}">
+                            <a href="#" class="uk-notification-close close-dir" uk-close></a>
+                            ${path}
+                            <span class="uk-badge">${nb}</span>
+                        </p>`
 })
 
 ipc.on('loading', function (event, loading) {

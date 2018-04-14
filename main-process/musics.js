@@ -13,12 +13,13 @@ const logging = require('./logging.js')
 const lastfm = new LastFM('e01234609d70b34055b389734707ac0a')
 const temp = `${os.tmpdir()}\\${electron.app.getName()}-${electron.app.getVersion()}`
 
-var directory = [],
+var directory = {},
   error = [],
   index = {},
   summary = {},
   folder,
   loading
+  var dirMusic = []
 
 Log(`Répertoire temporaire: ${temp}`)
 createDir(temp)
@@ -26,6 +27,7 @@ const coverPATH = path.join(temp,'/covers')
 createDir(coverPATH)
 
 console.log('tmp', temp)
+
 
 ipc.on('open-file-dialog', (event, args) => {
   dialog.showOpenDialog({
@@ -36,30 +38,47 @@ ipc.on('open-file-dialog', (event, args) => {
       Log(`Répertoire musical: ${folder}`)
       if (args === 'select') {
         Log(`Sélection unique.`)
-        directory = []
+        directory = {}
         index = {}
       }
       listFiles(folder)
-      Log(`Il y a ${directory.length} musiques`)
-      event.sender.send('selected-directory', folder, directory.length)
+      Log(`Il y a ${directory[folder].length} musiques`)
+      event.sender.send('selected-directory', folder, directory[folder].length)
     }
   })
 })
 
+ipc.on('remove-dir', (event, args) => {
+  if (args!==undefined){
+    directory[args] = []
+  }
+  else directory = {}
+})
+
 ipc.on('loading', (event) => {
-  listMusics(directory, event)
+  for (var currentDir in directory){
+    directory[currentDir].forEach((file) => {
+      dirMusic.push(file)
+    })
+  }
+  listMusics(dirMusic, event)
   Log(`Analyse des musiques`)
 })
 
 ipc.on('submit', (event) => {
   let newFolder, output
   newFolder = folder.split('\\')
-  console.log(newFolder)
+  console.log('nouveau dossier',newFolder)
   newFolder.pop()
   output = newFolder.join('\\')
   writeMusics(output)
   Log(`Export des musiques vers ${output}`)
 })
+
+function listFiles (dir) {
+  directory[dir] = glob.sync(path.join(dir,'/**/@(*.mp3|*.wav)'))
+  Log(`Liste des fichiers: ${directory/*.join('\n')*/}`)
+}
 
 function artistRequest (artist) {
   lastfm.artistInfo({ name: artist }, (err, data) => {
@@ -81,11 +100,6 @@ function albumRequest (album, artist) {
       download(data.images[data.images.length - 1], `${temp}\\covers\\${artist}\\${album}.png`)
     }
   })
-}
-
-function listFiles (dir) {
-  directory = glob.sync(path.join(dir,'/**/@(*.mp3|*.wav)'))
-  Log(`Liste des fichiers: ${directory.join('\n')}`)
 }
 
 function listMusics (list, event) {
@@ -119,8 +133,7 @@ function listMusics (list, event) {
         index[data.album_artist][data.album][data.track].title = data.title
         index[data.album_artist][data.album][data.track].path = file
         advancement++
-        // console.log(advancement);
-        loading = Math.round(advancement * 100 / directory.length)
+        loading = Math.round(advancement * 100 / dirMusic.length)
         console.log(`${loading}%`)
         Log(`Avancement de l'analyse: ${loading}%`)
         event.sender.send('loading', loading)

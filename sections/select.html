@@ -3,26 +3,24 @@
         <div class="uk-container uk-container">
             <div class="uk-section uk-section-default">
 
-            <div uk-grid>
+
                 <article class="uk-article">
 
                     <button class="uk-button uk-button-default" id='select-directory'>
                         <span class="uk-margin-small-right" uk-icon="icon: folder"></span>
                         Sélectionner un dossier
                     </button>
-                    <button class="uk-button uk-button-default" disabled>
+                    <button class="uk-button uk-button-default" id='add-directory'disabled>
                         <span class="uk-margin-small-right" uk-icon="icon: plus-circle"></span>
                         Ajouter un dossier
                     </button>
-                    <button class="uk-button uk-button-danger" disabled>
+                    <button class="uk-button uk-button-danger" id='delete-directory'disabled>
                         <span class="uk-margin-small-right" uk-icon="icon: trash"></span>
                         Tout supprimer
                     </button>
 
-                    <p class="uk-notification-message uk-notification-message-primary">
-                        <a href="#" class="uk-notification-close" uk-close></a>
-                        D:\Maël\Documents\GitHub\Daft-Project\folder
-                    </p>
+                    <div id="directory-list">
+                    </div>
 
                     <h2 id='send-directory' >Process</h2>
 
@@ -41,13 +39,11 @@
                             <button class="uk-button uk-button-default" id='submit'>Envoyer</button>
 
                         </div>
-                    </br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br>
                     <p>We are using node <script>document.write(process.versions.node)</script>,
                         Chrome <script>document.write(process.versions.chrome)</script>,
                         and Electron <script>document.write(process.versions.electron)</script>.
                     </p>
                 </article>
-            </div>
             </div>
         </div>
     </section>
