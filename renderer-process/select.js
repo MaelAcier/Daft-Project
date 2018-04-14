@@ -13,6 +13,9 @@ const dirList = document.getElementById('directory-list')
 ///////Détection des actions////////
 selectDir.addEventListener('click', function (event) {
   ipc.send('open-file-dialog', 'select')
+  while (dirList.firstChild) {
+    dirList.removeChild(dirList.firstChild);
+  }
 })
 
 addDir.addEventListener('click', function (event) {
@@ -38,12 +41,6 @@ document.addEventListener('click', (event) => {
   }
 })
 
-
-/*closeDir.addEventListener('click', function (event) {
-  var dir = document.getElementById(event.target.id)
-  dir.parentNode.removeChild(dir)
-})*/
-
 submit.addEventListener('click', function () {
   ipc.send('submit')
 })
@@ -54,6 +51,7 @@ submit.addEventListener('click', function () {
 ipc.on('selected-directory', function (event, path, nb) {
   deleteDir.removeAttribute('disabled');
   addDir.removeAttribute('disabled');
+  sendDir.removeAttribute('disabled');
 
   dirList.innerHTML += `<p class="uk-notification-message uk-notification-message-primary" id="${path}">
                             <a href="#" class="uk-notification-close close-dir" uk-close></a>
