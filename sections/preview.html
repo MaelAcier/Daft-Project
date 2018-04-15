@@ -1,5 +1,49 @@
 <template class="task-template">
     <section>
-        <h2>Page 2</h2>
+        <div class="uk-container uk-container">
+            <div class="uk-section uk-section-default">
+                <article class="uk-article">
+
+                        <h2>Albums</h2>
+
+                        <div uk-slider>
+                            <div class="uk-position-relative uk-visible-toggle uk-light">
+                                <ul class="uk-slider-items uk-child-width-1-2@s uk-child-width-1-4@m" uk-grid id="albums"></ul>
+
+                                <a class="uk-position-center-left uk-position-small uk-hidden-hover" href="#" uk-slidenav-previous uk-slider-item="previous"></a>
+                                <a class="uk-position-center-right uk-position-small uk-hidden-hover" href="#" uk-slidenav-next uk-slider-item="next"></a>
+                            </div>
+                            <ul class="uk-slider-nav uk-dotnav uk-flex-center uk-margin"></ul>
+                        </div>
+
+                        <div id="artists"></div>
+
+                        <ul uk-accordion>
+                            <li>
+                                <a class="uk-accordion-title" href="#">Liste complète</a>
+                                <div class="uk-accordion-content">
+                                    <ul class="uk-list uk-list-divider" id="list"></ul>
+                                </div>
+                            </li>
+                        </ul>
+
+                        <div class="boundary uk-margin uk-flex uk-flex-between">
+                            <div class="uk-inline">
+                                <button class="uk-button uk-button-default" id='output-folder'disabled>
+                                    <span class="uk-margin-small-right" uk-icon="icon: folder"></span>
+                                    Dossier de sortie
+                                </button>
+                                <div uk-drop="pos: bottom-justify; boundary: ! .boundary; boundary-align: true">
+                                    <div class="uk-card uk-card-body uk-card-default" id="export-default">Dossier par défaut: </div>
+                                </div>
+                            </div>
+                            <button class="uk-button uk-button-primary" id='submit'disabled>
+                                <span class="uk-margin-small-right" uk-icon="icon: push"></span>
+                                Exporter
+                            </button>  
+                        </div>
+                </article>
+            </div>
+        </div>
     </section>
 </template>

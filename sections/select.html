@@ -3,23 +3,26 @@
         <div class="uk-container uk-container">
             <div class="uk-section uk-section-default">
                 <article class="uk-article">
+                    <div class="boundary uk-margin uk-flex uk-flex-between">
                     <button class="uk-button uk-button-default" id='select-directory'>
                         <span class="uk-margin-small-right" uk-icon="icon: folder"></span>
                         Sélectionner un dossier
                     </button>
+
                     <button class="uk-button uk-button-default" id='add-directory'disabled>
                         <span class="uk-margin-small-right" uk-icon="icon: plus-circle"></span>
                         Ajouter un dossier
                     </button>
+
                     <button class="uk-button uk-button-danger" id='delete-directory'disabled>
                         <span class="uk-margin-small-right" uk-icon="icon: trash"></span>
                         Tout supprimer
                     </button>
+                    </div>
 
                     <hr class="uk-divider-small">
 
-                    <div id="directory-list">
-                    </div>
+                    <div id="directory-list"></div>
 
                     <hr class="uk-divider-icon">
 
@@ -30,19 +33,8 @@
                         </button>
                     </div>
                     
-                    <p id='selected-file'>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                    <p>Etat</p>
-                    <progress id="progressbar" class="uk-progress" value="0" max="100"></progress>
-                    <div class="uk-margin" uk-margin>
+                    <div id="loading"></div>
 
-                            <div uk-form-custom="target: true">
-                                <input type="file" id='directory' webkitdirectory>
-                                <input id = 'directoryHolder' class="uk-input uk-form-width-medium" type="text" placeholder="Sélectionner des fichiers" disabled>
-                            </div>
-
-                            <button class="uk-button uk-button-default" id='submit'>Envoyer</button>
-
-                    </div>
                 </article>
             </div>
         </div>

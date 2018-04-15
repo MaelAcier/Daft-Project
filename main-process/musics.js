@@ -14,17 +14,21 @@ const lastfm = new LastFM('e01234609d70b34055b389734707ac0a')
 const temp = `${os.tmpdir()}\\${electron.app.getName()}-${electron.app.getVersion()}`
 
 var directory = {},
-  error = [],
+  musicsList = []
   index = {},
+  error = [],
   summary = {},
-  folder,
-  loading
-  var dirMusic = []
+  loading = 0,
+  downloadAdvancement = 0,
+  downloadProgress = 0,
+  ipcLoading = null,
+  ipcPreview = null,
+  exportFolder = path.resolve(__dirname,"../")
 
 Log(`Répertoire temporaire: ${temp}`)
-createDir(temp)
+createFolder(temp)
 const coverPATH = path.join(temp,'/covers')
-createDir(coverPATH)
+createFolder(coverPATH)
 
 console.log('tmp', temp)
 
@@ -34,48 +38,66 @@ ipc.on('open-file-dialog', (event, args) => {
     properties: ['openFile', 'openDirectory']
   }, function (files) {
     if (files) {
-      folder = files[0]
-      Log(`Répertoire musical: ${folder}`)
+      let selectedFolder = files[0]
+      Log(`Répertoire musical: ${selectedFolder}`)
       if (args === 'select') {
         Log(`Sélection unique.`)
         directory = {}
-        index = {}
       }
-      listFiles(folder)
-      Log(`Il y a ${directory[folder].length} musiques`)
-      event.sender.send('selected-directory', folder, directory[folder].length)
+      analyzeDirectory(selectedFolder)
+      let number = directory[selectedFolder].length
+      Log(`Il y a ${number} musiques`)
+      event.sender.send('selected-directory', selectedFolder, number)
     }
   })
 })
 
 ipc.on('remove-dir', (event, args) => {
-  if (args!==undefined){
-    directory[args] = []
-  }
+  if (args!==undefined) directory[args] = []
   else directory = {}
 })
 
 ipc.on('loading', (event) => {
+  ipcLoading = event
+  musicsList = []
   for (var currentDir in directory){
     directory[currentDir].forEach((file) => {
-      dirMusic.push(file)
+      musicsList.push(file)
     })
   }
-  listMusics(dirMusic, event)
+  analyzeMusics(musicsList)
   Log(`Analyse des musiques`)
 })
 
 ipc.on('submit', (event) => {
-  let newFolder, output
-  newFolder = folder.split('\\')
-  console.log('nouveau dossier',newFolder)
-  newFolder.pop()
-  output = newFolder.join('\\')
-  writeMusics(output)
-  Log(`Export des musiques vers ${output}`)
+  exportMusics(exportFolder)
+  Log(`Export des musiques vers ${exportFolder}`)
 })
 
-function listFiles (dir) {
+ipc.on('show-data', (event) => {
+  console.log('show-data')
+  ipcPreview.sender.send('show-data', index, temp, summary, exportFolder)
+  //console.log(summary)
+})
+
+ipc.on('preview-ready', (event) => {
+  ipcPreview = event
+  console.log('preview ready');
+})
+
+ipc.on('export-dialog', (event) => {
+  dialog.showOpenDialog({
+    properties: ['openFile', 'openDirectory']
+  }, function (files) {
+    if (files) {
+      let selectedFolder = files[0]
+      exportFolder = selectedFolder
+      event.sender.send('export-dialog', selectedFolder)
+    }
+  })
+})
+
+function analyzeDirectory (dir) {
   directory[dir] = glob.sync(path.join(dir,'/**/@(*.mp3|*.wav)'))
   Log(`Liste des fichiers: ${directory/*.join('\n')*/}`)
 }
@@ -86,8 +108,14 @@ function artistRequest (artist) {
     else {
       console.log('data')
       Log(`Requête: ${artist}`)
-      summary[artist] = data.summary
-      download(data.images[data.images.length - 1], `${temp}\\covers\\${artist}.png`)
+      summary[artist]={}
+      summary[artist].summary = data.summary
+      summary[artist].similar = []
+      for (similarArtist in data.similar){
+        summary[artist].similar.push(data.similar[similarArtist].name)
+      }
+      summary[artist].tags = data.tags
+      download(data.images[data.images.length - 1], `${temp}\\covers\\${artist}.jpg`)
     }
   })
 }
@@ -97,13 +125,16 @@ function albumRequest (album, artist) {
     if (err) Log(`Lastfm: ${err}`, 2)
     else {
       Log(`Requête: ${album} \\ ${artist}`)
-      download(data.images[data.images.length - 1], `${temp}\\covers\\${artist}\\${album}.png`)
+      download(data.images[data.images.length - 1], `${temp}\\covers\\${artist}\\${album}.jpg`)
     }
   })
 }
 
-function listMusics (list, event) {
+function analyzeMusics (list) {
+  index = {}
   var advancement = 0
+  downloadAdvancement = 0
+  downloadProgress = 0
   list.forEach((file) => {
     ffmetadata.read(file, (err, data) => {
       if (err) {
@@ -113,17 +144,19 @@ function listMusics (list, event) {
       } else {
         if (!Object.keys(index).includes(data.album_artist)) {
           index[data.album_artist] = {}
+          downloadAdvancement++
           artistRequest(data.album_artist)
         }
         if (!Object.keys(index[data.album_artist]).includes(data.album)) {
           index[data.album_artist][data.album] = {}
 
           let coverpath = `${temp}\\covers\\${data.album_artist}`
-          createDir(coverpath)
+          createFolder(coverpath)
           ffmetadata.read(file, {coverPath: [`${coverpath}\\${data.album}.jpg`]}, (err) => {
             if (err) {
               console.error('Error writing cover art')
               Log(`Pochette (${data.album}): ${err}`, 1)
+              downloadAdvancement++
               albumRequest(data.album, data.album_artist)
             } else console.log('Cover art added')
             Log(`Pochette ajoutée: ${data.album}`)
@@ -133,16 +166,17 @@ function listMusics (list, event) {
         index[data.album_artist][data.album][data.track].title = data.title
         index[data.album_artist][data.album][data.track].path = file
         advancement++
-        loading = Math.round(advancement * 100 / dirMusic.length)
+        loading = Math.round(advancement * 100 / musicsList.length)
         console.log(`${loading}%`)
         Log(`Avancement de l'analyse: ${loading}%`)
-        event.sender.send('loading', loading)
+        ipcLoading.sender.send('loading', loading, Math.round(downloadProgress * 100 / downloadAdvancement))
       }
     })
   })
 }
 
-function writeMusics (dir) {
+function exportMusics (dir) {
+  console.log(summary)
   var newDir = `${dir}\\output-`
   var artistNumber = 0,
     trackNumber = 0,
@@ -155,7 +189,7 @@ function writeMusics (dir) {
     artistNumber++
     trackNumber = 0
     artistDir = digits(artistNumber)
-    createDir(`${newDir}\\${artistDir}`)
+    createFolder(`${newDir}\\${artistDir}`)
     indexStream.write(`${artist}\n`)
     indexStream.write(`\\${artistDir}\n`)
     for (var album in index[artist]) {
@@ -180,10 +214,9 @@ function writeMusics (dir) {
       let folderToCreate = file.split('/')
       folderToCreate = folderToCreate.diff(temp.split('\\'))
       folderToCreate = folderToCreate.join('\\')
-      createDir(path.join(newDir,folderToCreate))
+      createFolder(path.join(newDir,folderToCreate))
     }
     else{
-      console.log(file)
       let fileToCreate = file.split('/')
       fileToCreate = fileToCreate.diff(temp.split('\\'))
       fileToCreate = fileToCreate.join('\\')
@@ -199,7 +232,7 @@ function digits100 (n) {
   return (n < 10 ? '00' : n < 100 ? '0' : '') + n
 }
 
-function createDir (dirPath) {
+function createFolder (dirPath) {
   try {
     fs.mkdirSync(dirPath)
     Log(`Dossier créé: ${dirPath}`)
@@ -217,6 +250,8 @@ function download (url, dest) {
     file.on('finish', function () {
       Log(`Fin de téléchargement: ${url}`)
       file.close()
+      downloadProgress++
+      ipcLoading.sender.send('loading', loading, Math.round(downloadProgress * 100 / downloadAdvancement))
     })
   })
 }

@@ -6,15 +6,16 @@ const addDir = document.getElementById('add-directory')
 const deleteDir = document.getElementById('delete-directory')
 const sendDir = document.getElementById('send-directory')
 const closeDir = document.getElementsByClassName('close-dir')
-const bar = document.getElementById('progressbar')
 const dirList = document.getElementById('directory-list')
+const load = document.getElementById('loading')
+var bar, barDownload
 
 
 ///////Détection des actions////////
 selectDir.addEventListener('click', function (event) {
   ipc.send('open-file-dialog', 'select')
   while (dirList.firstChild) {
-    dirList.removeChild(dirList.firstChild);
+    dirList.removeChild(dirList.firstChild)
   }
 })
 
@@ -25,12 +26,17 @@ addDir.addEventListener('click', function (event) {
 deleteDir.addEventListener('click', function (event) {
   ipc.send('remove-dir')
   while (dirList.firstChild) {
-    dirList.removeChild(dirList.firstChild);
+    dirList.removeChild(dirList.firstChild)
   }
   disable()
 })
 
 sendDir.addEventListener('click', function (event) {
+  load.innerHTML = `<p>Etat</p>
+                      <progress id="progressbar" class="uk-progress" value="0" max="100"></progress>
+                    <p>téléchargements</p>
+                      <progress id="progressbarDownload" class="uk-progress" value="0" max="100"></progress>`
+  sendDir.setAttribute("disabled", "");
   ipc.send('loading')
 })
 
@@ -43,10 +49,6 @@ document.addEventListener('click', (event) => {
       disable()
     }
   }
-})
-
-submit.addEventListener('click', function () {
-  ipc.send('submit')
 })
 
 function disable (){
@@ -69,7 +71,15 @@ ipc.on('selected-directory', function (event, path, nb) {
                         </p>`
 })
 
-ipc.on('loading', function (event, loading) {
-  console.log(loading)
+ipc.on('loading', function (event, loading, download) {
+  bar = document.getElementById('progressbar')
+  barDownload = document.getElementById('progressbarDownload')
+  console.log("loading:",loading)
+  console.log("download:",download)
   bar.value = loading
+  barDownload.value = download
+  if (loading===100&&download===100){
+    document.querySelector(`a[data-section=preview]`).click()
+    ipc.send('show-data')
+  }
 })

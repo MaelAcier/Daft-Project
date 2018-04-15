@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
+  <title>Daft Manager</title>
 
   <link rel="stylesheet" href="assets/css/uikit.min.css" />
 
@@ -17,36 +18,35 @@
                             <div class="uk-position-top">
                                 <nav class="uk-navbar-container uk-navbar-transparent" uk-navbar>
                                     <div class="uk-navbar-left">
+                                        <a class="uk-navbar-toggle" uk-navbar-toggle-icon href="#"></a>
                                         <ul class="uk-navbar-nav">
-                                            <li class="uk-active"><a href="#" data-section="select">Sélection</a></li>
-                                            <li>
-                                                <a href="#" data-section="preview">Prévisualisation</a>
-                                                <div class="uk-navbar-dropdown">
-                                                    <ul class="uk-nav uk-navbar-dropdown-nav">
-                                                        <li class="uk-active"><a href="#">Active</a></li>
-                                                        <li class="uk-parent">
-                                                            <a href="#">Parent</a>
-                                                            <ul class="uk-nav-sub">
-                                                                <li><a href="#">Sub item</a></li>
-                                                                <li><a href="#">Sub item</a></li>
-                                                            </ul>
-                                                        </li>
-                                                        <li class="uk-nav-header">Header</li>
-                                                        <li><a href="#"><span class="uk-margin-small-right" uk-icon="icon: table"></span> Item</a></li>
-                                                        <li><a href="#"><span class="uk-margin-small-right" uk-icon="icon: thumbnails"></span> Item</a></li>
-                                                        <li class="uk-nav-divider"></li>
-                                                        <li><a href="#"><span class="uk-margin-small-right" uk-icon="icon: trash"></span> Item</a></li>
-                                                    </ul>
-                                                </div>
-                                            </li>
+                                            <li><a href="#" data-section="select">Sélection</a></li>
+                                            <li><a href="#" data-section="preview">Prévisualisation</a></li>
                                         </ul>
                                     </div>
                                     <div class="uk-navbar-right">
-                                        <div class="uk-navbar-nav">
-                                                <li><a href="">Animations</a></li>
+                                        <ul class="uk-navbar-nav">
+                                                <li><a href="">Animations</a>
+                                                    <div class="uk-navbar-dropdown">
+                                                        <ul class="uk-nav uk-navbar-dropdown-nav">
+                                                            <li class="uk-active"><a href="#">Active</a></li>
+                                                            <li class="uk-parent">
+                                                                <a href="#">Parent</a>
+                                                                <ul class="uk-nav-sub">
+                                                                    <li><a href="#">Sub item</a></li>
+                                                                    <li><a href="#">Sub item</a></li>
+                                                                </ul>
+                                                            </li>
+                                                            <li class="uk-nav-header">Header</li>
+                                                            <li><a href="#"><span class="uk-margin-small-right" uk-icon="icon: table"></span> Item</a></li>
+                                                            <li><a href="#"><span class="uk-margin-small-right" uk-icon="icon: thumbnails"></span> Item</a></li>
+                                                            <li class="uk-nav-divider"></li>
+                                                            <li><a href="#"><span class="uk-margin-small-right" uk-icon="icon: trash"></span> Item</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </li>
                                                 <li><a href="">Guide</a></li>
-                                        </div>
-                                        <a class="uk-navbar-toggle" uk-navbar-toggle-icon href="#"></a>
+                                        </ul>
                                     </div>
                                 </nav>
                             </div>
