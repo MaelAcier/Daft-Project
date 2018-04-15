@@ -41,7 +41,9 @@ function showContent(event){
   sectionName = event.target.dataset.section
   document.querySelector('.content').appendChild(pages[sectionName])
   currentSection(event)
+  require(`./renderer-process/${sectionName}`)
 }
+//<script src="./renderer-process/${sectionName}.js"></script>
 
 function currentSection (current) {
   const buttons = document.querySelectorAll('.uk-navbar-nav li')
@@ -53,5 +55,6 @@ function currentSection (current) {
   selected.className = 'uk-active'
 }
 
-document.querySelector('.content').appendChild(pages['select'])
-sectionName = 'select'
+//document.querySelector(`a[data-section=select]`).click()
+document.querySelector('.content').appendChild(pages['home'])
+sectionName = 'home'

@@ -27,6 +27,7 @@ deleteDir.addEventListener('click', function (event) {
   while (dirList.firstChild) {
     dirList.removeChild(dirList.firstChild);
   }
+  disable()
 })
 
 sendDir.addEventListener('click', function (event) {
@@ -38,6 +39,9 @@ document.addEventListener('click', (event) => {
     var dir = event.target.parentNode.parentNode
     ipc.send('remove-dir', dir.id)
     dir.parentNode.removeChild(dir)
+    if (!dirList.firstChild) {
+      disable()
+    }
   }
 })
 
@@ -45,6 +49,11 @@ submit.addEventListener('click', function () {
   ipc.send('submit')
 })
 
+function disable (){
+  deleteDir.setAttribute("disabled", "");
+  addDir.setAttribute("disabled", "");
+  sendDir.setAttribute("disabled", "");
+}
 
 
 ////////Réponse des canaux///////
