@@ -41,7 +41,9 @@ function showContent(event){
   sectionName = event.target.dataset.section
   document.querySelector('.content').appendChild(pages[sectionName])
   currentSection(event)
-  require(`./renderer-process/${sectionName}`)
+  try{
+    require(`./renderer-process/${sectionName}`)
+  } catch (err) {console.log("Aucun script")}
 }
 //<script src="./renderer-process/${sectionName}.js"></script>
 

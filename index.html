@@ -6,9 +6,10 @@
 
   <link rel="stylesheet" href="assets/css/uikit.min.css" />
 
+  <link rel="import" href="sections/home.html" id="home">
   <link rel="import" href="sections/select.html" id="select">
   <link rel="import" href="sections/preview.html" id="preview">
-  <link rel="import" href="sections/home.html" id="home">
+  <link rel="import" href="sections/about.html" id="about">
 
 </head>
 <body>
@@ -26,7 +27,7 @@
                                     </div>
                                     <div class="uk-navbar-right">
                                         <ul class="uk-navbar-nav">
-                                                <li><a href="">Animations</a>
+                                                <li><a href="#">Animations</a>
                                                     <div class="uk-navbar-dropdown">
                                                         <ul class="uk-nav uk-navbar-dropdown-nav">
                                                             <li class="uk-active"><a href="#">Active</a></li>
@@ -45,7 +46,7 @@
                                                         </ul>
                                                     </div>
                                                 </li>
-                                                <li><a href="">Guide</a></li>
+                                                <li><a href="#" data-section="about">à propos</a></li>
                                         </ul>
                                     </div>
                                 </nav>
@@ -60,3 +61,10 @@
     
 </body>
 </html>
+
+<!--
+<p>We are using node <script>document.write(process.versions.node)</script>,
+    Chrome <script>document.write(process.versions.chrome)</script>,
+    and Electron <script>document.write(process.versions.electron)</script>.
+</p>
+-->

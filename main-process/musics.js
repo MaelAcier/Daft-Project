@@ -11,7 +11,7 @@ const {dialog} = require('electron')
 const logging = require('./logging.js')
 
 const lastfm = new LastFM('e01234609d70b34055b389734707ac0a')
-const temp = `${os.tmpdir()}\\${electron.app.getName()}-${electron.app.getVersion()}`
+const temp = path.join(os.tmpdir(),`${electron.app.getName()}-${electron.app.getVersion()}`)
 
 var directory = {},
   musicsList = []
@@ -27,7 +27,7 @@ var directory = {},
 
 Log(`Répertoire temporaire: ${temp}`)
 createFolder(temp)
-const coverPATH = path.join(temp,'/covers')
+const coverPATH = path.join(temp,'covers')
 createFolder(coverPATH)
 
 console.log('tmp', temp)
@@ -75,14 +75,11 @@ ipc.on('submit', (event) => {
 })
 
 ipc.on('show-data', (event) => {
-  console.log('show-data')
   ipcPreview.sender.send('show-data', index, temp, summary, exportFolder)
-  //console.log(summary)
 })
 
 ipc.on('preview-ready', (event) => {
   ipcPreview = event
-  console.log('preview ready');
 })
 
 ipc.on('export-dialog', (event) => {
@@ -115,7 +112,7 @@ function artistRequest (artist) {
         summary[artist].similar.push(data.similar[similarArtist].name)
       }
       summary[artist].tags = data.tags
-      download(data.images[data.images.length - 1], `${temp}\\covers\\${artist}.jpg`)
+      download(data.images[data.images.length - 1], path.join(temp,'covers',`${artist}.jpg`))
     }
   })
 }
@@ -124,8 +121,8 @@ function albumRequest (album, artist) {
   lastfm.albumInfo({name: album, artistName: artist}, (err, data) => {
     if (err) Log(`Lastfm: ${err}`, 2)
     else {
-      Log(`Requête: ${album} \\ ${artist}`)
-      download(data.images[data.images.length - 1], `${temp}\\covers\\${artist}\\${album}.jpg`)
+      Log(`Requête: ${album} / ${artist}`)
+      download(data.images[data.images.length - 1], path.join(temp,'covers',artist,`${album}.jpg`))
     }
   })
 }
@@ -150,9 +147,9 @@ function analyzeMusics (list) {
         if (!Object.keys(index[data.album_artist]).includes(data.album)) {
           index[data.album_artist][data.album] = {}
 
-          let coverpath = `${temp}\\covers\\${data.album_artist}`
+          let coverpath = path.join(temp,'covers', data.album_artist)
           createFolder(coverpath)
-          ffmetadata.read(file, {coverPath: [`${coverpath}\\${data.album}.jpg`]}, (err) => {
+          ffmetadata.read(file, {coverPath: [path.join(coverpath,`${data.album}.jpg`)]}, (err) => {
             if (err) {
               console.error('Error writing cover art')
               Log(`Pochette (${data.album}): ${err}`, 1)
@@ -177,19 +174,19 @@ function analyzeMusics (list) {
 
 function exportMusics (dir) {
   console.log(summary)
-  var newDir = `${dir}\\output-`
+  var newDir = path.join(dir,'output-')
   var artistNumber = 0,
     trackNumber = 0,
     artistDir,
     trackDir
   newDir = fs.mkdtempSync(newDir)
   Log(`Dossier de sortie: ${newDir}`)
-  var indexStream = fs.createWriteStream(`${newDir}\\index.txt`, {flags: 'a', autoClose: true})// 'a' means appending (old data will be preserved
+  var indexStream = fs.createWriteStream(path.join(newDir,`index.txt`), {flags: 'a', autoClose: true})// 'a' means appending (old data will be preserved
   for (var artist in index) {
     artistNumber++
     trackNumber = 0
     artistDir = digits(artistNumber)
-    createFolder(`${newDir}\\${artistDir}`)
+    createFolder(path.join(newDir,artistDir))
     indexStream.write(`${artist}\n`)
     indexStream.write(`\\${artistDir}\n`)
     for (var album in index[artist]) {
@@ -197,7 +194,7 @@ function exportMusics (dir) {
       for (var track in index[artist][album]) {
         trackNumber++
         trackDir = digits100(trackNumber)
-        copy(index[artist][album][track].path,`${newDir}\\${artistDir}\\${trackDir}.mp3`)
+        copy(index[artist][album][track].path, path.join(newDir, artistDir, `${trackDir}.mp3`))
         indexStream.write(`\t\t${index[artist][album][track].title}\n`)
         indexStream.write(`\t\t\\${trackDir}\n`)
       }

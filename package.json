@@ -1,5 +1,5 @@
 {
-  "name": "Daft-Manager",
+  "name": "daft_manager",
   "productName": "Daft Manager",
   "version": "1.0.0",
   "description": "Helper tool for Daft Punk",
@@ -42,8 +42,7 @@
   },
   "author": {
     "name": "Maël Acier",
-    "email": "contact@github.com",
-    "url": "http://github.com"
+    "email": "mael.acier@protonmail.com"
   },
   "bugs": {
     "url": "https://github.com/owner/project/issues",

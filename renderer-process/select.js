@@ -32,9 +32,9 @@ deleteDir.addEventListener('click', function (event) {
 })
 
 sendDir.addEventListener('click', function (event) {
-  load.innerHTML = `<p>Etat</p>
+  load.innerHTML = `<p>Analyse des musiques</p>
                       <progress id="progressbar" class="uk-progress" value="0" max="100"></progress>
-                    <p>téléchargements</p>
+                    <p>Récupération de données</p>
                       <progress id="progressbarDownload" class="uk-progress" value="0" max="100"></progress>`
   sendDir.setAttribute("disabled", "");
   ipc.send('loading')
