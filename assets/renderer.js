@@ -9,6 +9,7 @@ document.addEventListener('keydown', function (e) {
 })
 
 ////////
+//document.getElementById('welcome-trigger').click()
 const links = document.querySelectorAll('link[rel="import"]')
 var pages = {}
 var sectionName
@@ -60,3 +61,4 @@ function currentSection (current) {
 //document.querySelector(`a[data-section=select]`).click()
 document.querySelector('.content').appendChild(pages['home'])
 sectionName = 'home'
+require(`./renderer-process/home.js`)

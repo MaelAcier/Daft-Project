@@ -1,0 +1,78 @@
+2018-04-19 15:40:49.386 [musics.js] [INFO] Répertoire temporaire: C:\Users\MAL~1\AppData\Local\Temp\Daft Manager-1.0.0
+2018-04-19 15:40:49.387 [musics.js] [WARN] Le dossier existe déja: C:\Users\MAL~1\AppData\Local\Temp\Daft Manager-1.0.0
+2018-04-19 15:40:49.387 [musics.js] [WARN] Le dossier existe déja: C:\Users\MAL~1\AppData\Local\Temp\Daft Manager-1.0.0\covers
+2018-04-19 15:40:59.959 [musics.js] [INFO] Répertoire musical: D:\Maël\Documents\GitHub\Daft-Project\folder
+2018-04-19 15:40:59.959 [musics.js] [INFO] Sélection unique.
+2018-04-19 15:40:59.974 [musics.js] [INFO] Liste des fichiers: [object Object]
+2018-04-19 15:40:59.974 [musics.js] [INFO] Il y a 30 musiques
+2018-04-19 15:41:01.500 [musics.js] [INFO] Analyse des musiques
+2018-04-19 15:41:02.614 [musics.js] [INFO] Dossier créé: C:\Users\MAL~1\AppData\Local\Temp\Daft Manager-1.0.0\covers\Daft Punk
+2018-04-19 15:41:02.633 [musics.js] [INFO] Avancement de l'analyse: 3%
+2018-04-19 15:41:02.635 [musics.js] [WARN] Le dossier existe déja: C:\Users\MAL~1\AppData\Local\Temp\Daft Manager-1.0.0\covers\Daft Punk
+2018-04-19 15:41:02.656 [musics.js] [INFO] Avancement de l'analyse: 7%
+2018-04-19 15:41:02.657 [musics.js] [INFO] Avancement de l'analyse: 10%
+2018-04-19 15:41:02.658 [musics.js] [INFO] Avancement de l'analyse: 13%
+2018-04-19 15:41:02.658 [musics.js] [INFO] Avancement de l'analyse: 17%
+2018-04-19 15:41:02.658 [musics.js] [INFO] Avancement de l'analyse: 20%
+2018-04-19 15:41:02.658 [musics.js] [INFO] Avancement de l'analyse: 23%
+2018-04-19 15:41:02.661 [musics.js] [INFO] Dossier créé: C:\Users\MAL~1\AppData\Local\Temp\Daft Manager-1.0.0\covers\Justice
+2018-04-19 15:41:02.689 [musics.js] [INFO] Avancement de l'analyse: 27%
+2018-04-19 15:41:02.690 [musics.js] [INFO] Avancement de l'analyse: 30%
+2018-04-19 15:41:02.691 [musics.js] [INFO] Avancement de l'analyse: 33%
+2018-04-19 15:41:02.692 [musics.js] [INFO] Avancement de l'analyse: 37%
+2018-04-19 15:41:02.693 [musics.js] [INFO] Dossier créé: C:\Users\MAL~1\AppData\Local\Temp\Daft Manager-1.0.0\covers\Breakbot
+2018-04-19 15:41:02.726 [musics.js] [INFO] Avancement de l'analyse: 40%
+2018-04-19 15:41:02.726 [musics.js] [INFO] Avancement de l'analyse: 43%
+2018-04-19 15:41:02.727 [musics.js] [INFO] Avancement de l'analyse: 47%
+2018-04-19 15:41:02.731 [musics.js] [INFO] Avancement de l'analyse: 50%
+2018-04-19 15:41:02.733 [musics.js] [INFO] Avancement de l'analyse: 53%
+2018-04-19 15:41:02.734 [musics.js] [INFO] Avancement de l'analyse: 57%
+2018-04-19 15:41:02.734 [musics.js] [INFO] Avancement de l'analyse: 60%
+2018-04-19 15:41:02.735 [musics.js] [INFO] Avancement de l'analyse: 63%
+2018-04-19 15:41:02.736 [musics.js] [INFO] Avancement de l'analyse: 67%
+2018-04-19 15:41:02.737 [musics.js] [INFO] Avancement de l'analyse: 70%
+2018-04-19 15:41:02.737 [musics.js] [INFO] Avancement de l'analyse: 73%
+2018-04-19 15:41:02.738 [musics.js] [INFO] Avancement de l'analyse: 77%
+2018-04-19 15:41:02.738 [musics.js] [INFO] Avancement de l'analyse: 80%
+2018-04-19 15:41:02.739 [musics.js] [INFO] Avancement de l'analyse: 83%
+2018-04-19 15:41:02.739 [musics.js] [WARN] Le dossier existe déja: C:\Users\MAL~1\AppData\Local\Temp\Daft Manager-1.0.0\covers\Justice
+2018-04-19 15:41:02.769 [musics.js] [INFO] Avancement de l'analyse: 87%
+2018-04-19 15:41:02.769 [musics.js] [INFO] Avancement de l'analyse: 90%
+2018-04-19 15:41:02.776 [musics.js] [INFO] Avancement de l'analyse: 93%
+2018-04-19 15:41:02.784 [musics.js] [WARN] Pochette (Harder Better Faster Stronger): Error: ffmpeg version N-90306-g688060fbb7 Copyright (c) 2000-2018 the FFmpeg developers
+  built with gcc 7.3.0 (GCC)
+  configuration: --enable-gpl --enable-version3 --enable-sdl2 --enable-bzlib --enable-fontconfig --enable-gnutls --enable-iconv --enable-libass --enable-libbluray --enable-libfreetype --enable-libmp3lame --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libopus --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libtheora --enable-libtwolame --enable-libvpx --enable-libwavpack --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxml2 --enable-libzimg --enable-lzma --enable-zlib --enable-gmp --enable-libvidstab --enable-libvorbis --enable-libvo-amrwbenc --enable-libmysofa --enable-libspeex --enable-libxvid --enable-libmfx --enable-amf --enable-ffnvcodec --enable-cuvid --enable-d3d11va --enable-nvenc --enable-nvdec --enable-dxva2 --enable-avisynth
+  libavutil      56.  9.100 / 56.  9.100
+  libavcodec     58. 14.100 / 58. 14.100
+  libavformat    58. 10.100 / 58. 10.100
+  libavdevice    58.  2.100 / 58.  2.100
+  libavfilter     7. 13.100 /  7. 13.100
+  libswscale      5.  0.102 /  5.  0.102
+  libswresample   3.  0.101 /  3.  0.101
+  libpostproc    55.  0.100 / 55.  0.100
+[mp3 @ 0000022d4f56c040] Estimating duration from bitrate, this may be inaccurate
+Input #0, mp3, from 'D:/Maël/Documents/GitHub/Daft-Project/folder/Harder Better Faster Stronger/B4 - Harder Better Faster Stronger ( Pete Hellers Stylus).mp3':
+  Metadata:
+    album           : Harder Better Faster Stronger
+    artist          : Daft Punk
+    album_artist    : Daft Punk
+    disc            : 2
+    title           : Harder Better Faster Stronger (Pete Hellers Stylus)
+    track           : 4
+    date            : 2001
+  Duration: 00:09:14.96, start: 0.000000, bitrate: 320 kb/s
+    Stream #0:0: Audio: mp3, 44100 Hz, stereo, s16p, 320 kb/s
+Output #0, image2, to 'C:\Users\MAL~1\AppData\Local\Temp\Daft Manager-1.0.0\covers\Daft Punk\Harder Better Faster Stronger.jpg':
+Output file #0 does not contain any stream
+
+2018-04-19 15:41:02.785 [musics.js] [INFO] Pochette ajoutée: Harder Better Faster Stronger
+2018-04-19 15:41:02.787 [musics.js] [INFO] Avancement de l'analyse: 97%
+2018-04-19 15:41:02.796 [musics.js] [INFO] Avancement de l'analyse: 100%
+2018-04-19 15:41:02.826 [musics.js] [INFO] Pochette ajoutée: Civilization
+2018-04-19 15:41:02.829 [musics.js] [INFO] Pochette ajoutée: Revolution 909
+2018-04-19 15:41:02.855 [musics.js] [INFO] Pochette ajoutée: By Your Side
+2018-04-19 15:41:03.094 [musics.js] [INFO] Pochette ajoutée: Audio, Video, Disco. - EP
+2018-04-19 15:41:03.755 [musics.js] [INFO] Requête: Harder Better Faster Stronger / Daft Punk
+2018-04-19 15:41:12.771 [musics.js] [INFO] Requête: Daft Punk
+2018-04-19 15:41:14.265 [musics.js] [INFO] Requête: Breakbot
+2018-04-19 15:41:14.735 [musics.js] [INFO] Requête: Justice

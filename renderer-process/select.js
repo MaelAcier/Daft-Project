@@ -1,4 +1,5 @@
 const ipc = require('electron').ipcRenderer
+require('../assets/uikit.min.js')
 
 const submit = document.getElementById('submit')
 const selectDir = document.getElementById('select-directory')
@@ -8,22 +9,24 @@ const sendDir = document.getElementById('send-directory')
 const closeDir = document.getElementsByClassName('close-dir')
 const dirList = document.getElementById('directory-list')
 const load = document.getElementById('loading')
+const retry = document.getElementById('retry')
+const continuer = document.getElementById('continuer')
 var bar, barDownload
 
 
 ///////Détection des actions////////
-selectDir.addEventListener('click', function (event) {
+selectDir.addEventListener('click', (event) => {
   ipc.send('open-file-dialog', 'select')
   while (dirList.firstChild) {
     dirList.removeChild(dirList.firstChild)
   }
 })
 
-addDir.addEventListener('click', function (event) {
+addDir.addEventListener('click', (event) => {
   ipc.send('open-file-dialog')
 })
 
-deleteDir.addEventListener('click', function (event) {
+deleteDir.addEventListener('click', (event) => {
   ipc.send('remove-dir')
   while (dirList.firstChild) {
     dirList.removeChild(dirList.firstChild)
@@ -31,7 +34,7 @@ deleteDir.addEventListener('click', function (event) {
   disable()
 })
 
-sendDir.addEventListener('click', function (event) {
+sendDir.addEventListener('click', (event) => {
   load.innerHTML = `<p>Analyse des musiques</p>
                       <progress id="progressbar" class="uk-progress" value="0" max="100"></progress>
                     <p>Récupération de données</p>
@@ -56,6 +59,15 @@ function disable (){
   addDir.setAttribute("disabled", "");
   sendDir.setAttribute("disabled", "");
 }
+
+retry.addEventListener('click', (event) => {
+  ipc.send('loading')
+})
+
+continuer.addEventListener('click', function (event) {
+  document.querySelector(`a[data-section=preview]`).click()
+  ipc.send('show-data')
+})
 
 
 ////////Réponse des canaux///////
@@ -82,4 +94,9 @@ ipc.on('loading', function (event, loading, download) {
     document.querySelector(`a[data-section=preview]`).click()
     ipc.send('show-data')
   }
+})
+
+ipc.on('no-internet', (event) => {
+  document.getElementById('no-internet-trigger').click()
+  console.log('no internet')
 })

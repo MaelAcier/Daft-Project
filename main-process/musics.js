@@ -2,13 +2,13 @@ const os = require('os')
 const fs = require('fs')
 const path = require('path')
 const glob = require('glob')
-const https = require('https')
 const LastFM = require('last-fm')
 const ffmetadata = require('ffmetadata')
 const electron = require('electron')
 const ipc = require('electron').ipcMain
 const {dialog} = require('electron')
 const logging = require('./logging.js')
+const assets = require('./assets.js')
 
 const lastfm = new LastFM('e01234609d70b34055b389734707ac0a')
 const temp = path.join(os.tmpdir(),`${electron.app.getName()}-${electron.app.getVersion()}`)
@@ -23,9 +23,10 @@ var directory = {},
   downloadProgress = 0,
   ipcLoading = null,
   ipcPreview = null,
-  exportFolder = path.resolve(__dirname,"../")
+  exportFolder = path.resolve(__dirname,"../"),
+  connection = true
 
-Log(`Répertoire temporaire: ${temp}`)
+log(`Répertoire temporaire: ${temp}`)
 createFolder(temp)
 const coverPATH = path.join(temp,'covers')
 createFolder(coverPATH)
@@ -39,14 +40,14 @@ ipc.on('open-file-dialog', (event, args) => {
   }, function (files) {
     if (files) {
       let selectedFolder = files[0]
-      Log(`Répertoire musical: ${selectedFolder}`)
+      log(`Répertoire musical: ${selectedFolder}`)
       if (args === 'select') {
-        Log(`Sélection unique.`)
+        log(`Sélection unique.`)
         directory = {}
       }
       analyzeDirectory(selectedFolder)
       let number = directory[selectedFolder].length
-      Log(`Il y a ${number} musiques`)
+      log(`Il y a ${number} musiques`)
       event.sender.send('selected-directory', selectedFolder, number)
     }
   })
@@ -65,13 +66,22 @@ ipc.on('loading', (event) => {
       musicsList.push(file)
     })
   }
+  assets.checkInternet((internet) => {
+    if (internet) {
+      console.log("connected")
+    } else {
+      console.log("not connected")
+      ipcLoading.sender.send('no-internet')
+      connection = false
+    }
+  });
   analyzeMusics(musicsList)
-  Log(`Analyse des musiques`)
+  log(`Analyse des musiques`)
 })
 
 ipc.on('submit', (event) => {
   exportMusics(exportFolder)
-  Log(`Export des musiques vers ${exportFolder}`)
+  log(`Export des musiques vers ${exportFolder}`)
 })
 
 ipc.on('show-data', (event) => {
@@ -96,15 +106,23 @@ ipc.on('export-dialog', (event) => {
 
 function analyzeDirectory (dir) {
   directory[dir] = glob.sync(path.join(dir,'/**/@(*.mp3|*.wav)'))
-  Log(`Liste des fichiers: ${directory/*.join('\n')*/}`)
+  log(`Liste des fichiers: ${directory/*.join('\n')*/}`)
 }
 
 function artistRequest (artist) {
   lastfm.artistInfo({ name: artist }, (err, data) => {
-    if (err) Log(`Lastfm: ${err}`, 2)
+    if (err) {
+      log(`Lastfm: ${err}`, 2)
+      if (!connection){
+        console.log('no internet')
+        //ipcLoading.sender.send('no-internet')
+        let rand = getRandomInt(1, 3)
+        copy(path.resolve(__dirname,`../assets/images/default-artist${rand}.jpg`), path.join(temp,'covers',`${artist}.jpg`))
+      }
+    } 
     else {
       console.log('data')
-      Log(`Requête: ${artist}`)
+      log(`Requête: ${artist}`)
       summary[artist]={}
       summary[artist].summary = data.summary
       summary[artist].similar = []
@@ -119,9 +137,17 @@ function artistRequest (artist) {
 
 function albumRequest (album, artist) {
   lastfm.albumInfo({name: album, artistName: artist}, (err, data) => {
-    if (err) Log(`Lastfm: ${err}`, 2)
+    if (err) {
+      log(`Lastfm: ${err}`, 2)
+      if (!connection){
+        console.log('no internet')
+        //ipcLoading.sender.send('no-internet')
+        let rand = getRandomInt(1, 5)
+        copy(path.resolve(__dirname,`../assets/images/default-album${rand}.jpg`), path.join(temp,'covers',artist,`${album}.jpg`))
+      }
+    } 
     else {
-      Log(`Requête: ${album} / ${artist}`)
+      log(`Requête: ${album} / ${artist}`)
       download(data.images[data.images.length - 1], path.join(temp,'covers',artist,`${album}.jpg`))
     }
   })
@@ -136,7 +162,7 @@ function analyzeMusics (list) {
     ffmetadata.read(file, (err, data) => {
       if (err) {
         console.error('Error reading metadata', err)
-        Log(`Lecture des metadata: ${err} pour ${file}`, 2)
+        log(`Lecture des metadata: ${err} pour ${file}`, 2)
         error.push(file)
       } else {
         if (!Object.keys(index).includes(data.album_artist)) {
@@ -152,11 +178,11 @@ function analyzeMusics (list) {
           ffmetadata.read(file, {coverPath: [path.join(coverpath,`${data.album}.jpg`)]}, (err) => {
             if (err) {
               console.error('Error writing cover art')
-              Log(`Pochette (${data.album}): ${err}`, 1)
+              log(`Pochette (${data.album}): ${err}`, 1)
               downloadAdvancement++
               albumRequest(data.album, data.album_artist)
             } else console.log('Cover art added')
-            Log(`Pochette ajoutée: ${data.album}`)
+            log(`Pochette ajoutée: ${data.album}`)
           })
         }
         index[data.album_artist][data.album][data.track] = {}
@@ -165,7 +191,7 @@ function analyzeMusics (list) {
         advancement++
         loading = Math.round(advancement * 100 / musicsList.length)
         console.log(`${loading}%`)
-        Log(`Avancement de l'analyse: ${loading}%`)
+        log(`Avancement de l'analyse: ${loading}%`)
         ipcLoading.sender.send('loading', loading, Math.round(downloadProgress * 100 / downloadAdvancement))
       }
     })
@@ -180,7 +206,7 @@ function exportMusics (dir) {
     artistDir,
     trackDir
   newDir = fs.mkdtempSync(newDir)
-  Log(`Dossier de sortie: ${newDir}`)
+  log(`Dossier de sortie: ${newDir}`)
   var indexStream = fs.createWriteStream(path.join(newDir,`index.txt`), {flags: 'a', autoClose: true})// 'a' means appending (old data will be preserved
   for (var artist in index) {
     artistNumber++
@@ -232,30 +258,31 @@ function digits100 (n) {
 function createFolder (dirPath) {
   try {
     fs.mkdirSync(dirPath)
-    Log(`Dossier créé: ${dirPath}`)
+    log(`Dossier créé: ${dirPath}`)
   } catch (err) {
-    if (err.code === 'EEXIST') Log(`Le dossier existe déja: ${dirPath}`, 1)
+    if (err.code === 'EEXIST') log(`Le dossier existe déja: ${dirPath}`, 1)
     else throw err
   }
 }
 
 function download (url, dest) {
-  var file = fs.createWriteStream(dest)
-  Log(`Téléchargement: ${url} vers ${dest}`)
-  https.get(url, function (response) {
-    response.pipe(file)
-    file.on('finish', function () {
-      Log(`Fin de téléchargement: ${url}`)
-      file.close()
-      downloadProgress++
-      ipcLoading.sender.send('loading', loading, Math.round(downloadProgress * 100 / downloadAdvancement))
-    })
+  assets.download(url, dest, () => {
+    downloadProgress++
+    ipcLoading.sender.send('loading', loading, Math.round(downloadProgress * 100 / downloadAdvancement))
   })
 }
+
 function copy (source, destination) {
   fs.createReadStream(source, {autoClose: true}).pipe(fs.createWriteStream(destination))
 }
 
-function Log (args, level) {
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function log (args, level) {
   logging.write(__filename, args, level)
 }
+
+
+

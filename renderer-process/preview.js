@@ -6,7 +6,7 @@ const list = document.getElementById('list')
 const outFolder = document.getElementById('output-folder')
 const submit = document.getElementById('submit')
 const exportDefault = document.getElementById('export-default')
-
+var artistSummary, artistTags, artistSimilar
 ipc.send('preview-ready')
 
 ipc.on('show-data', (event, index, temp, summary, exportFolder)=>{
@@ -27,6 +27,18 @@ ipc.on('show-data', (event, index, temp, summary, exportFolder)=>{
                                     </div>
                                 </li>`
         }
+        console.log("artiste:", summary[artist])
+        if (summary[artist]) {
+            artistSummary = summary[artist].summary.replace(/\n/g, '</br>')
+            artistTags = summary[artist].tags.join("</li><li>")
+            artistSimilar = summary[artist].similar.join("</li><li>")
+        } else {
+            artistSummary = "Pas de biographie."
+            artistTags = "Pas de styles."
+            artistSimilar = "Pas d'artistes similaires."
+        }
+
+
         artists.innerHTML += `<div id="${artistId}" uk-offcanvas="flip: true; overlay: true">
                                 <div class="uk-offcanvas-bar">
                                     <button class="uk-offcanvas-close uk-close-large" type="button" uk-close></button>
@@ -42,14 +54,14 @@ ipc.on('show-data', (event, index, temp, summary, exportFolder)=>{
                                         <li class="uk-open">
                                             <a class="uk-accordion-title" href="#">Biographie</a>
                                             <div class="uk-accordion-content">
-                                                <p>${summary[artist].summary.replace(/\n/g, '</br>')}</p>
+                                                <p>${artistSummary}</p>
                                             </div>
                                         </li>
                                         <li>
                                             <a class="uk-accordion-title" href="#">Styles</a>
                                             <div class="uk-accordion-content">
                                                 <ul class="uk-list uk-list-bullet">
-                                                    <li>${summary[artist].tags.join("</li><li>")}</li>
+                                                    <li>${artistTags}</li>
                                                 </ul>
                                             </div>
                                         </li>
@@ -57,7 +69,7 @@ ipc.on('show-data', (event, index, temp, summary, exportFolder)=>{
                                             <a class="uk-accordion-title" href="#">Artistes similaires</a>
                                             <div class="uk-accordion-content">
                                                 <ul class="uk-list uk-list-bullet">
-                                                <li>${summary[artist].similar.join("</li><li>")}</li>
+                                                <li>${artistSimilar}</li>
                                                 </ul>
                                             </div>
                                         </li>
