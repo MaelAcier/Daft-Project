@@ -9,7 +9,7 @@ document.addEventListener('keydown', function (e) {
 })
 
 ////////
-//document.getElementById('welcome-trigger').click()
+document.getElementById('welcome-trigger').click()
 const links = document.querySelectorAll('link[rel="import"]')
 var pages = {}
 var sectionName
@@ -29,7 +29,7 @@ console.log(pages)
 document.addEventListener('click', (event) => {
   if (event.target.dataset.section) {
     showContent(event)
-  } else console.log("hey, wrong code")
+  }
 })
 
 function showContent(event){
@@ -42,6 +42,7 @@ function showContent(event){
   sectionName = event.target.dataset.section
   document.querySelector('.content').appendChild(pages[sectionName])
   currentSection(event)
+  document.querySelector(`.content`).click()
   try{
     require(`./renderer-process/${sectionName}`)
   } catch (err) {console.log("Aucun script")}

@@ -17,6 +17,7 @@ var directory = {},
   musicsList = []
   index = {},
   error = [],
+  missingData = [],
   summary = {},
   loading = 0,
   downloadAdvancement = 0,
@@ -27,10 +28,9 @@ var directory = {},
   connection = true
 
 log(`Répertoire temporaire: ${temp}`)
-createFolder(temp)
-const coverPATH = path.join(temp,'covers')
-createFolder(coverPATH)
-
+assets.createFolder(temp)
+const coverDir = path.join(temp,'covers')
+assets.createFolder(coverDir)
 console.log('tmp', temp)
 
 
@@ -117,7 +117,7 @@ function artistRequest (artist) {
         console.log('no internet')
         //ipcLoading.sender.send('no-internet')
         let rand = getRandomInt(1, 3)
-        copy(path.resolve(__dirname,`../assets/images/default-artist${rand}.jpg`), path.join(temp,'covers',`${artist}.jpg`))
+        assets.copy(path.resolve(__dirname,`../assets/images/default-artist${rand}.jpg`), path.join(coverDir,`${artist}.jpg`))
       }
     } 
     else {
@@ -130,7 +130,7 @@ function artistRequest (artist) {
         summary[artist].similar.push(data.similar[similarArtist].name)
       }
       summary[artist].tags = data.tags
-      download(data.images[data.images.length - 1], path.join(temp,'covers',`${artist}.jpg`))
+      download(data.images[data.images.length - 1], path.join(coverDir,`${artist}.jpg`))
     }
   })
 }
@@ -143,12 +143,12 @@ function albumRequest (album, artist) {
         console.log('no internet')
         //ipcLoading.sender.send('no-internet')
         let rand = getRandomInt(1, 5)
-        copy(path.resolve(__dirname,`../assets/images/default-album${rand}.jpg`), path.join(temp,'covers',artist,`${album}.jpg`))
+        assets.copy(path.resolve(__dirname,`../assets/images/default-album${rand}.jpg`), path.join(coverDir,artist,`${album}.jpg`))
       }
     } 
     else {
       log(`Requête: ${album} / ${artist}`)
-      download(data.images[data.images.length - 1], path.join(temp,'covers',artist,`${album}.jpg`))
+      download(data.images[data.images.length - 1], path.join(coverDir,artist,`${album}.jpg`))
     }
   })
 }
@@ -164,7 +164,11 @@ function analyzeMusics (list) {
         console.error('Error reading metadata', err)
         log(`Lecture des metadata: ${err} pour ${file}`, 2)
         error.push(file)
-      } else {
+      }
+      else if(data.album_artist===undefined||data.album===undefined||data.track===undefined||data.title===undefined){
+        missingData.push(file)
+      }
+      else {
         if (!Object.keys(index).includes(data.album_artist)) {
           index[data.album_artist] = {}
           downloadAdvancement++
@@ -174,7 +178,7 @@ function analyzeMusics (list) {
           index[data.album_artist][data.album] = {}
 
           let coverpath = path.join(temp,'covers', data.album_artist)
-          createFolder(coverpath)
+          assets.createFolder(coverpath)
           ffmetadata.read(file, {coverPath: [path.join(coverpath,`${data.album}.jpg`)]}, (err) => {
             if (err) {
               console.error('Error writing cover art')
@@ -212,7 +216,7 @@ function exportMusics (dir) {
     artistNumber++
     trackNumber = 0
     artistDir = digits(artistNumber)
-    createFolder(path.join(newDir,artistDir))
+    assets.createFolder(path.join(newDir,artistDir))
     indexStream.write(`${artist}\n`)
     indexStream.write(`\\${artistDir}\n`)
     for (var album in index[artist]) {
@@ -220,14 +224,14 @@ function exportMusics (dir) {
       for (var track in index[artist][album]) {
         trackNumber++
         trackDir = digits100(trackNumber)
-        copy(index[artist][album][track].path, path.join(newDir, artistDir, `${trackDir}.mp3`))
+        assets.copy(index[artist][album][track].path, path.join(newDir, artistDir, `${trackDir}.mp3`))
         indexStream.write(`\t\t${index[artist][album][track].title}\n`)
         indexStream.write(`\t\t\\${trackDir}\n`)
       }
     }
   }
 
-  var listCovers = glob.sync(path.join(temp,'covers','/**'))
+  var listCovers = glob.sync(path.join(coverDir,'/**'))
   listCovers.forEach(function(file) {
     var stat = fs.statSync(file);
     if (stat.isDirectory()) {
@@ -237,13 +241,13 @@ function exportMusics (dir) {
       let folderToCreate = file.split('/')
       folderToCreate = folderToCreate.diff(temp.split('\\'))
       folderToCreate = folderToCreate.join('\\')
-      createFolder(path.join(newDir,folderToCreate))
+      assets.createFolder(path.join(newDir,folderToCreate))
     }
     else{
       let fileToCreate = file.split('/')
       fileToCreate = fileToCreate.diff(temp.split('\\'))
       fileToCreate = fileToCreate.join('\\')
-      copy(file,path.join(newDir,fileToCreate))
+      assets.copy(file,path.join(newDir,fileToCreate))
     }
 });
 }
@@ -255,25 +259,11 @@ function digits100 (n) {
   return (n < 10 ? '00' : n < 100 ? '0' : '') + n
 }
 
-function createFolder (dirPath) {
-  try {
-    fs.mkdirSync(dirPath)
-    log(`Dossier créé: ${dirPath}`)
-  } catch (err) {
-    if (err.code === 'EEXIST') log(`Le dossier existe déja: ${dirPath}`, 1)
-    else throw err
-  }
-}
-
 function download (url, dest) {
   assets.download(url, dest, () => {
     downloadProgress++
     ipcLoading.sender.send('loading', loading, Math.round(downloadProgress * 100 / downloadAdvancement))
   })
-}
-
-function copy (source, destination) {
-  fs.createReadStream(source, {autoClose: true}).pipe(fs.createWriteStream(destination))
 }
 
 function getRandomInt(min, max) {

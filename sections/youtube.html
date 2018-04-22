@@ -1,0 +1,38 @@
+<template class="task-template">
+  <section>
+      <div class="uk-container uk-container">
+          <div class="uk-section uk-section-default">
+              <article class="uk-article">
+                  <h1>youtube</h1>
+
+                  <div class="uk-text-center">
+                    <div class="uk-flex uk-flex-inline">
+                      <div class="uk-inline">
+                        <span uk-icon="icon: youtube"></span>
+                        <input class="uk-input uk-form-width-large" id="youtube-link" type="text" placeholder="Lien YouTube">
+                      </div>
+                        <div><button class="uk-button uk-button-default" id="youtube-trigger">Submit</button></div>
+                    </div>
+                  </div>
+
+                </br>
+
+                <div class="uk-text-center" id="youtube-embeded"></div>
+
+                </br>
+
+                <div class="uk-text-center uk-animation-toggle">
+                    <button class="uk-button uk-button-primary uk-animation-shake" id='youtube-download' disabled>
+                        <span class="uk-margin-small-right" uk-icon="icon: upload"></span>
+                        Télécharger
+                    </button>
+                </div>
+
+                <p>Téléchargement</p>
+                  <progress id="youtube-progressbar" class="uk-progress uk-animation-scale-up" value="0" max="100"></progress>`
+
+              </article>
+          </div>
+      </div>
+  </section>
+</template>

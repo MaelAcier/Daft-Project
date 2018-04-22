@@ -36,9 +36,11 @@
     "electron": "~1.8.2"
   },
   "dependencies": {
+    "ffmetadata": "latest",
+    "fs-extra": "latest",
     "glob": "^7.1.0",
     "last-fm": "^5.2.0",
-    "ffmetadata": "latest"
+    "youtube-mp3-downloader": "^0.5.3"
   },
   "author": {
     "name": "Maël Acier",

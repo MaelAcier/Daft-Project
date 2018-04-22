@@ -1,5 +1,6 @@
 const fs = require('fs')
 const path = require('path')
+const ipc = require('electron').ipcMain
 
 const logDir = path.resolve(__dirname,"../logs")
 
@@ -24,5 +25,9 @@ module.exports = {
         logStream.write(`${utc} ${process} ${logLevel} ${args}\n`)
     }
 
-};
+}
+
+ipc.on('log', (event, args) => {
+    console.log(event.sender)
+})
 
