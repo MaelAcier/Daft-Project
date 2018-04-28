@@ -1,14 +1,14 @@
 {
-  "name": "template",
+  "name": "daft_manager",
   "version": "0.1.0",
-  "description": "template description",
+  "description": "Helper tool for Daft Punk",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "dev": "electron . --debug",
     "package": "npm-run-all package:*"
   },
-  "repository": "https://github.com/MaelAcier/js-template",
+  "repository": "https://github.com/MaelAcier/Daft-Project",
   "keywords": [
     "template",
     "demo"
