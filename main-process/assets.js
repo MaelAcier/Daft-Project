@@ -8,8 +8,10 @@ module.exports = {
 		require('dns').lookup('google.com',function(err) {
 			if (err && err.code == "ENOTFOUND") {
 				console.log(err)
+				log('Pas de connexion internet.',1)
 				result(false);
 			} else {
+				log('Connexion internet.')
 				result(true);
 			}
 		})
@@ -20,8 +22,9 @@ module.exports = {
 		https.get(url, (response) => {
 			response.pipe(file)
 			file.on('finish', () => {
-			file.close()
-			callback()
+				file.close()
+				log(`Fin du téléchargement de: ${url}}`)
+				callback()
 			})
 		})
 	},
@@ -35,7 +38,12 @@ module.exports = {
 		}
 	},
 	copy: (source, destination) => {
-		fs.createReadStream(source, {autoClose: true}).pipe(fs.createWriteStream(destination))
+		var file = fs.createWriteStream(destination)
+		log(`Copie de ${source} vers ${destination}`)
+		fs.createReadStream(source, {autoClose: true}).pipe(file)
+		file.on('finish', () => {
+			log(`Fin de la copie de ${source}`)
+		})
 	}
 };
 

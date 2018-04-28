@@ -19,7 +19,7 @@ log = {
     const process = `[${path.basename(caller)}]`
     var logLevel
     const utc = new Date().toJSON().slice(0, 23).replace(/T/, ' ')
-    if (level === undefined) logLevel = '[INFO]'
+    if (level === null) logLevel = '[INFO]'
     else if (level === 1) logLevel = '[WARN]'
     else if (level === 2) logLevel = '[ERROR]'
     else logLevel = '[DEBUG]'

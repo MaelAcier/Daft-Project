@@ -1,0 +1,12 @@
+2018-04-28 13:38:47.145 [import.js] [INFO] Importation de la section select
+2018-04-28 13:38:47.149 [select.js] [INFO] select.js importé avec succès.
+2018-04-28 13:38:47.149 [import.js] [INFO] Importation de la section preview
+2018-04-28 13:38:47.150 [import.js] [ERROR] Impossible d'importer preview.js: Error: Cannot find module '../renderer-process/preview'
+2018-04-28 13:38:50.543 [import.js] [INFO] Affichage de la section select
+2018-04-28 13:38:50.544 [import.js] [ERROR] Pas de page: TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
+2018-04-28 13:38:51.035 [import.js] [INFO] Affichage de la section preview
+2018-04-28 13:41:04.245 [import.js] [INFO] Affichage de la section preview
+2018-04-28 13:41:04.588 [import.js] [INFO] Affichage de la section select
+2018-04-28 13:41:05.002 [import.js] [INFO] Affichage de la section preview
+2018-04-28 13:41:05.354 [import.js] [INFO] Affichage de la section select
+2018-04-28 13:41:06.174 [import.js] [INFO] Affichage de la section preview
