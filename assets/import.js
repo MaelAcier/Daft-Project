@@ -2,6 +2,7 @@ const path = require('path')
 
 const links = document.querySelectorAll('link[rel="import"]')
 
+
 Array.prototype.forEach.call(links, (link) => {
   let sectionName = path.basename(link.href, '.html')
   let template = link.import.querySelector('section')
@@ -9,7 +10,7 @@ Array.prototype.forEach.call(links, (link) => {
   clone.id = sectionName
   document.querySelector('#content').appendChild(clone)
   try{
-    require(`./${sectionName}`)
+    require(`../renderer-process/${sectionName}`)
   } catch (err) {console.log("Aucun script")}
 })
 
@@ -25,14 +26,8 @@ function showContent(sectionName){
   main.appendChild(section)
 }
 
-setTimeout(function() {
-  showContent("select")
-}, 2000);
-
-setTimeout(function() {
-  showContent("preview")
-}, 4000);
-
-setTimeout(function() {
-  showContent("select")
-}, 6000);
+document.addEventListener('click', (event) => {
+  if (event.target.dataset.section) {
+    showContent(event.target.dataset.section)
+  }
+})
