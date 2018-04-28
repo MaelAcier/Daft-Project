@@ -1,10 +1,11 @@
 const path = require('path')
 const glob = require('glob')
 const {app, BrowserWindow} = require('electron')
+// const autoUpdater = require('./auto-updater')
 
 const debug = /--debug/.test(process.argv[2])
 
-if (process.mas) app.setName('template')
+if (process.mas) app.setName('Electron APIs')
 
 let mainWindow = null
 
@@ -12,14 +13,15 @@ function initialize () {
   const shouldQuit = makeSingleInstance()
   if (shouldQuit) return app.quit()
 
-  loadFiles()
+  loadDemos()
 
   function createWindow () {
     const windowOptions = {
       width: 1080,
       minWidth: 680,
       height: 840,
-      title: app.getName(),
+      //resizable: false,
+      title: app.getName()
     }
 
     if (process.platform === 'linux') {
@@ -43,6 +45,7 @@ function initialize () {
 
   app.on('ready', () => {
     createWindow()
+    // autoUpdater.initialize()
   })
 
   app.on('window-all-closed', () => {
@@ -77,9 +80,25 @@ function makeSingleInstance () {
 }
 
 // Require each JS file in the main-process dir
-function loadFiles () {
+function loadDemos () {
   const files = glob.sync(path.join(__dirname, 'main-process/**/*.js'))
   files.forEach((file) => { require(file) })
+  // autoUpdater.updateMenu()
 }
 
-initialize ()
+// Handle Squirrel on Windows startup events
+/* switch (process.argv[1]) {
+  case '--squirrel-install':
+    autoUpdater.createShortcut(() => { app.quit() })
+    break
+  case '--squirrel-uninstall':
+    autoUpdater.removeShortcut(() => { app.quit() })
+    break
+  case '--squirrel-obsolete':
+  case '--squirrel-updated':
+    app.quit()
+    break
+  default:
+    initialize()
+} */
+initialize()
