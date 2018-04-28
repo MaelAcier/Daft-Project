@@ -1,17 +1,14 @@
-const os = require('os')
 const fs = require('fs')
 const path = require('path')
 const glob = require('glob')
 const LastFM = require('last-fm')
 const ffmetadata = require('ffmetadata')
-const electron = require('electron')
 const ipc = require('electron').ipcMain
 const {dialog} = require('electron')
 const logging = require('./logging.js')
 const assets = require('./assets.js')
 
 const lastfm = new LastFM('e01234609d70b34055b389734707ac0a')
-const temp = path.join(os.tmpdir(),`${electron.app.getName()}-${electron.app.getVersion()}`)
 
 var directory = {},
   musicsList = []
@@ -27,11 +24,8 @@ var directory = {},
   exportFolder = path.resolve(__dirname,"../"),
   connection = true
 
-log(`Répertoire temporaire: ${temp}`)
-assets.createFolder(temp)
 const coverDir = path.join(temp,'covers')
 assets.createFolder(coverDir)
-console.log('tmp', temp)
 
 
 ipc.on('open-file-dialog', (event, args) => {
@@ -264,10 +258,6 @@ function download (url, dest) {
     downloadProgress++
     ipcLoading.sender.send('loading', loading, Math.round(downloadProgress * 100 / downloadAdvancement))
   })
-}
-
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function log (args, level) {

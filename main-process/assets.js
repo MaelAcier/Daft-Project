@@ -1,9 +1,15 @@
 const fs = require('fs')
+const path = require('path')
+const os = require('os')
 const https = require('https')
+const electron = require('electron')
 const ipc = require('electron').ipcMain
 const logging = require('./logging.js')
 
-module.exports = {
+var assets = {
+
+	temp: path.join(os.tmpdir(),`${electron.app.getName()}-${electron.app.getVersion()}`),
+
 	checkInternet: (result) => {
 		require('dns').lookup('google.com',function(err) {
 			if (err && err.code == "ENOTFOUND") {
@@ -16,6 +22,7 @@ module.exports = {
 			}
 		})
 	},
+
 	download: (url, dest, callback) => {
 		var file = fs.createWriteStream(dest)
 		log(`Téléchargement: ${url} vers ${dest}`)
@@ -28,6 +35,7 @@ module.exports = {
 			})
 		})
 	},
+
 	createFolder: (dir) => {
 		try {
 			fs.mkdirSync(dir)
@@ -37,6 +45,7 @@ module.exports = {
 			else throw err
 		}
 	},
+
 	copy: (source, destination) => {
 		var file = fs.createWriteStream(destination)
 		log(`Copie de ${source} vers ${destination}`)
@@ -44,9 +53,18 @@ module.exports = {
 		file.on('finish', () => {
 			log(`Fin de la copie de ${source}`)
 		})
+	},
+	
+	getRandomInt: (min, max) => {
+		return Math.floor(Math.random() * (max - min + 1)) + min;
 	}
-};
+}
+
+log(`Dossier temporaire système: ${assets.temp}`, 3)
+assets.createFolder(assets.temp)
 
 function log (args, level) {
 	logging.write(__filename, args, level)
 }
+
+module.exports = assets

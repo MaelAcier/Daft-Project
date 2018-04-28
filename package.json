@@ -6,7 +6,9 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron . --debug",
-    "package": "npm-run-all package:*"
+    "package": "npm-run-all package:*",
+    "package:win": "electron-packager . --overwrite --platform=win32 --arch=ia32 --out=packages --icon=assets/app-icon/win/app.ico",
+    "package:mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --out=packages --icon=assets/app-icon/mac/app.icns --osx-sign.identity='Developer ID Application: GitHub' --extend-info=assets/mac/info.plist"
   },
   "repository": "https://github.com/MaelAcier/Daft-Project",
   "keywords": [
@@ -16,9 +18,12 @@
   "author": "Maël Acier",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "^1.8.4"
+    "electron": "^1.8.4",
+    "electron-packager": "^12.0.1"
   },
   "dependencies": {
-    "glob": "^7.1.2"
+    "ffmetadata": "^1.5.0",
+    "glob": "^7.1.2",
+    "last-fm": "^5.2.1"
   }
 }
