@@ -13,8 +13,8 @@ const lastfm = new LastFM('e01234609d70b34055b389734707ac0a')
 var musics = {
   index: {
     list: {},
-    error: {},
-    missingData: {}
+    error: [],
+    missingData: []
   },
 
   received: {
@@ -22,46 +22,65 @@ var musics = {
     export: []
   },
 
+  progress:{
+    analyze: {
+      value: 0,
+      max: 1
+    }
+  },
+
   services: {
     lastFm: "up"
+  },
+
+  ipcValue:{
+    select: null,
   },
 
   coversTemp: path.join(assets.temp,"covers"),
 
   ini: () => {
     let ffmetadataPath = path.resolve(__dirname,"../node_modules/ffmetadata/index.js")
+    log(`Initialisation: adresse ffmetadata: ${ffmetadataPath}`)
     fs.readFile(ffmetadataPath, 'utf-8', function(err, data){
       if (err) throw err;
-      console.log(typeof(data)); // string
       var newData = data.replace('ffmpeg = spawn.bind(null, process.env.FFMPEG_PATH || "ffmpeg"),', `ffmpeg = spawn.bind(null, "./resources/ffmpeg"),`);
       fs.writeFile(ffmetadataPath, newData, 'utf-8', function (err) {
         if (err) throw err;
-        console.log('filelistAsync complete');
+        log("Ecriture ffmetadata complète.")
         ffmetadata = require('ffmetadata')
       })
     })
     assets.createFolder(musics.coversTemp)
+    log("Fin de l'initialisation.")
   },
 
   analyze: {
     directory: (dir) => {
       musics.received.list[dir] = glob.sync(path.join(dir,'/**/@(*.mp3)'))
-      console.log(musics.received.list)
+      log(`Analyse de ${dir}`)
+      log(`Les musiques trouvées sont: ${musics.received.list[dir].join('\n')}`)
+
     },
     musics: (list) => {
+      musics.progress.analyze.value = 0
+      musics.progress.analyze.max = list.length
+      log(`Analyse de ${list.length} musiques: ${list.join('\n')}`)
       musics.index.list = {}
       list.forEach((file)=>{
         ffmetadata.read(file, (err, data) => {
           if (err) {
             log(`Impossible de lire les données de ${file}: ${err}`, 2)
-            index.error.push(file)
+            musics.index.error.push(file)
+            musics.progress.analyze.value++
           }
           else if(data.album_artist===undefined||data.album===undefined||data.track===undefined||data.title===undefined){
             log(`Manque de données pour ${file}`, 1)
-            index.missingData.push(file)
+            musics.index.missingData.push(file)
+            musics.progress.analyze.value++
           }
           else {
-            log(`Musique analysée: ${data.album_artist}/ ${data.album}/ ${data.title}`)
+            log(`Musique analysée: ${data.album_artist}/ ${data.album}/ ${data.title} // ${file}`)
   
             if (!Object.keys(musics.index.list).includes(data.album_artist)) {
               musics.index.list[data.album_artist] = {}
@@ -85,7 +104,9 @@ var musics = {
             musics.index.list[data.album_artist].albums[data.album][data.track] = {}
             musics.index.list[data.album_artist].albums[data.album][data.track].title = data.title
             musics.index.list[data.album_artist].albums[data.album][data.track].path = file
-            console.log(JSON.stringify(musics.index.list))
+            musics.progress.analyze.value++
+            log(`Avancée de l'analyse: ${musics.progress.analyze.value}/${list.length} : ${data.album_artist}/ ${data.album}/ ${data.title} // ${file}`)
+            musics.ipcValue.select.sender.send("select-progress", musics.progress.analyze.value, musics.progress.analyze.max)
           }
         })
       })
@@ -110,6 +131,7 @@ var musics = {
                   }
                   else {
                     musics.services.lastFm = "down"
+                    log("Erreur LastFm, requête par défaut.",3)
                     musics.request.artist.default(artist)
                   }
                 }
@@ -135,6 +157,7 @@ var musics = {
       },
       default: (artist) => {
         let rand = assets.getRandomInt(1, 3)
+        log(`Requête par défaut: ${artist}`)
         assets.copy(path.resolve(__dirname,`../assets/images/default-artist${rand}.jpg`), path.join(musics.coversTemp,`${artist}.jpg`))
       }
     },
@@ -155,6 +178,7 @@ var musics = {
                   }
                   else {
                     musics.services.lastFm = "down"
+                    log("Erreur LastFm, requête par défaut.",3)
                     musics.request.album.default(artist, album)
                   }
                 }
@@ -174,7 +198,7 @@ var musics = {
       },
       default: (artist, album) => {
         let rand = assets.getRandomInt(1, 5)
-        console.log("default")
+        log(`Requête par défaut: ${artist}/${album}`)
         assets.copy(path.resolve(__dirname,`../assets/images/default-album${rand}.jpg`), path.join(musics.coversTemp,artist,`${album}.jpg`))
       }
     }
@@ -185,17 +209,17 @@ musics.ini()
 
 ipc.on("select-upload", (event, dir) =>{
   if (fs.statSync(dir).isDirectory()){
-    console.log(dir,"is a directory!")
+    log(`Sélection du dossier: ${dir}`)
     musics.analyze.directory(dir)
     event.sender.send("select-callback", dir, musics.received.list[dir].length)
   }
   else if (/\.mp3$/.test(dir)){
-    console.log(dir,"is a music!")
+    log(`Sélection de la musique: ${dir}`)
     musics.received.list[dir] = dir
     event.sender.send("select-callback", dir, 1)
   }
   else{
-    console.log(dir,"is not a music and a folder.")
+    log("La sélection n'est pas valide.")
   }
 })
 
@@ -206,7 +230,7 @@ ipc.on("select-file-dialog", (event, args) => {
     }, function (files) {
       if (files) {
         let dir = files[0]
-        console.log(dir)
+        log(`Dialogue: Sélection de dossier: ${dir}`)
         musics.analyze.directory(dir)
         event.sender.send('select-callback', dir, musics.received.list[dir].length)
       }
@@ -221,7 +245,7 @@ ipc.on("select-file-dialog", (event, args) => {
     }, function (files) {
       if (files) {
         let dir = files[0]
-        console.log(dir)
+        log(`Dialogue: Sélection d'une musique': ${dir}`)
         musics.received.list[dir] = dir
         event.sender.send('select-callback', dir, 1)
       }
@@ -230,9 +254,28 @@ ipc.on("select-file-dialog", (event, args) => {
 })
 
 ipc.on("select-remove", (event, id) => {
-  console.log(id)
+  log(`Retrait de ${id}`)
   delete musics.received.list[id]
-  console.log(musics.received.list)
+})
+
+ipc.on("select-analyze", (event) => {
+  log("Début de l'analyse totale.")
+  musics.ipcValue.select = event
+  musics.received.export = []
+  for (var currentDir in musics.received.list){
+    musics.received.list[currentDir].forEach((file) => {
+      musics.received.export.push(file)
+    })
+  }
+  assets.checkInternet((internet) => {
+    if (internet) {
+      log("Connexion internet.")
+      musics.analyze.musics(musics.received.export)
+    } else {
+      event.sender.send('select-no-internet')
+      log("Pas de connexion internet.")
+    }
+  });
 })
 
 /*setTimeout(()=>{

@@ -7,7 +7,8 @@ const select = {
   directory: document.getElementById('select-directory'),
   file: document.getElementById('select-file'),
   list: document.getElementById('select-list'),
-  analyze: document.getElementById('select-analyze')
+  analyze: document.getElementById('select-analyze'),
+  progressbar: document.getElementById('select-progressbar')
 }
 
 
@@ -75,6 +76,15 @@ ipc.on("select-callback", (event, dir, length) => {
   }
 })
 
+ipc.on("select-progress", (event, value, max) =>{
+  select.progressbar.value = value
+  select.progressbar.max = max
+})
+
+ipc.on('select-no-internet', (event) => {
+  document.getElementById('select-no-internet-trigger').click()
+  console.log('no internet')
+})
 
 function log (args, level){
   ipc.send('log', __filename, args, level)
