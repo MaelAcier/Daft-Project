@@ -6,6 +6,8 @@ const electron = require('electron')
 const ipc = require('electron').ipcMain
 const logging = require('./logging.js')
 
+var ipcImport
+
 var assets = {
 
 	temp: path.join(os.tmpdir(),`${electron.app.getName()}-${electron.app.getVersion()}`),
@@ -62,6 +64,14 @@ var assets = {
 
 log(`Dossier temporaire système: ${assets.temp}`, 3)
 assets.createFolder(assets.temp)
+
+ipc.on('ipc-import', (event) => {
+	ipcImport = event
+})
+
+ipc.on("switch-section", (event, section) => {
+	ipcImport.sender.send("switch-section", section)
+})
 
 function log (args, level) {
 	logging.write(__filename, args, level)

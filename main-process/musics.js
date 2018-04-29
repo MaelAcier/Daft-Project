@@ -10,6 +10,8 @@ var ffmetadata
 
 const lastfm = new LastFM('e01234609d70b34055b389734707ac0a')
 
+musics.ini()
+
 var musics = {
   index: {
     list: {},
@@ -157,8 +159,8 @@ var musics = {
             musics.index.list[artist].tags = data.tags
             musics.progress.download.max++
             assets.download(data.images[data.images.length - 1], path.join(musics.coversTemp,`${artist}.jpg`), () =>{
-              log(`Téléchargement ${musics.progress.download.value}/${musics.progress.download.max}`)
               musics.progress.download.value++
+              log(`Téléchargement ${musics.progress.download.value}/${musics.progress.download.max}`)
               if(musics.progress.download.value === musics.progress.download.max){
                 musics.ipcValue.select.sender.send("select-done")
               }
@@ -203,8 +205,8 @@ var musics = {
             log(`Requête: ${album} / ${artist}`)
             musics.progress.download.max++
             assets.download(data.images[data.images.length - 1], path.join(musics.coversTemp,artist,`${album}.jpg`), () => {
-              log(`Téléchargement ${musics.progress.download.value}/${musics.progress.download.max}`)
               musics.progress.download.value++
+              log(`Téléchargement ${musics.progress.download.value}/${musics.progress.download.max}`)
               if(musics.progress.download.value === musics.progress.download.max){
                 musics.ipcValue.select.sender.send("select-done")
               }
@@ -220,8 +222,6 @@ var musics = {
     }
   }
 }
-
-musics.ini()
 
 ipc.on("select-upload", (event, dir) =>{
   if (fs.statSync(dir).isDirectory()){
@@ -293,10 +293,6 @@ ipc.on("select-analyze", (event) => {
     }
   });
 })
-
-/*setTimeout(()=>{
-  musics.analyze.musics(["D:\\Maël\\Documents\\GitHub\\Daft-Project\\music_samples\\By Your Side\\1 - Break Of Dawn.mp3"])
-}, 5000)*/
 
 function log (args, level) {
 	logging.write(__filename, args, level)

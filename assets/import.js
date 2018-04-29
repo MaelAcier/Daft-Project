@@ -38,6 +38,12 @@ document.addEventListener('click', (event) => {
   }
 })
 
+ipc.send("ipc-import")
+
+ipc.on("switch-section", (event, section) => {
+  showContent(section)
+})
+
 function log (args, level){
   ipc.send('log', __filename, args, level)
 }

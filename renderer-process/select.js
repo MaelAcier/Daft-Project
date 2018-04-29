@@ -8,7 +8,8 @@ const select = {
   file: document.getElementById('select-file'),
   list: document.getElementById('select-list'),
   analyze: document.getElementById('select-analyze'),
-  progressbar: document.getElementById('select-progressbar')
+  progressbar: document.getElementById('select-progressbar'),
+  spinner: document.getElementById('select-spinner')
 }
 
 
@@ -32,18 +33,20 @@ select.file.addEventListener('click', (event) => {
 
 select.analyze.addEventListener('click', (event) => {
   ipc.send("select-analyze")
-  select.analyze.parentNode.innerHTML += '<div uk-spinner id="select-spinner"></div>'
+  select.progressbar.value = 0
+  select.progressbar.max = 1
+  select.spinner.setAttribute("uk-spinner", "")
 })
 
-document.addEventListener('click', (event) => {
+select.list.addEventListener('click', (event) => {
   console.log(event.target.parentNode)
   if (event.target.parentNode.className === 'uk-notification-close close-dir uk-close uk-icon') {
     var dir = event.target.parentNode.parentNode
     ipc.send('select-remove', dir.id)
     dir.parentNode.removeChild(dir)
     if (!select.list.firstChild) {
-      select.analyze.setAttribute("disabled", "");
-      select.analyze.classList.add('uk-animation-shake');
+      select.analyze.setAttribute("disabled", "")
+      select.analyze.classList.add('uk-animation-shake')
     }
   }
 })
@@ -89,8 +92,10 @@ ipc.on('select-no-internet', (event) => {
 })
 
 ipc.on("select-done", (event) => {
-  let selectSpinner = document.getElementById('select-spinner')
-  selectSpinner.parentNode.removeChild(selectSpinner)
+  select.progressbar.value = 0
+  select.progressbar.max = 1
+  select.spinner.removeAttribute("uk-spinner")
+  ipc.send("switch-section", "preview")
 })
 
 function log (args, level){
