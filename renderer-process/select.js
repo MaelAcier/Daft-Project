@@ -8,8 +8,11 @@ const select = {
   file: document.getElementById('select-file'),
   list: document.getElementById('select-list'),
   analyze: document.getElementById('select-analyze'),
-  progressbar: document.getElementById('select-progressbar'),
-  spinner: document.getElementById('select-spinner')
+  bar: {
+    analyze: document.getElementById('select-bar-analyze'),
+    download: document.getElementById('select-bar-download'),
+  },
+  spinner: document.getElementById('select-spinner'),
 }
 
 
@@ -32,10 +35,12 @@ select.file.addEventListener('click', (event) => {
 })
 
 select.analyze.addEventListener('click', (event) => {
-  ipc.send("select-analyze")
-  select.progressbar.value = 0
-  select.progressbar.max = 1
+  select.bar.analyze.value = 0
+  select.bar.analyze.max = 1
+  select.bar.download.value = 0
+  select.bar.download.max = 1
   select.spinner.setAttribute("uk-spinner", "")
+  ipc.send("select-analyze")
 })
 
 select.list.addEventListener('click', (event) => {
@@ -81,9 +86,14 @@ ipc.on("select-callback", (event, dir, length) => {
   }
 })
 
-ipc.on("select-progress", (event, value, max) =>{
-  select.progressbar.value = value
-  select.progressbar.max = max
+ipc.on("select-progress-analyze", (event, value, max) =>{
+  select.bar.analyze.value = value
+  select.bar.analyze.max = max
+})
+
+ipc.on("select-progress-download", (event, value, max) =>{
+  select.bar.download.value = value
+  select.bar.download.max = max
 })
 
 ipc.on('select-no-internet', (event) => {
@@ -92,8 +102,10 @@ ipc.on('select-no-internet', (event) => {
 })
 
 ipc.on("select-done", (event) => {
-  select.progressbar.value = 0
-  select.progressbar.max = 1
+  select.bar.analyze.value = 0
+  select.bar.analyze.max = 1
+  select.bar.download.value = 0
+  select.bar.download.max = 1
   select.spinner.removeAttribute("uk-spinner")
   ipc.send("switch-section", "preview")
 })

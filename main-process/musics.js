@@ -10,8 +10,6 @@ var ffmetadata
 
 const lastfm = new LastFM('e01234609d70b34055b389734707ac0a')
 
-musics.ini()
-
 var musics = {
   index: {
     list: {},
@@ -31,7 +29,7 @@ var musics = {
     },
     download: {
       value: 0,
-      max: 0
+      max: 1
     }
   },
 
@@ -41,6 +39,7 @@ var musics = {
 
   ipcValue:{
     select: null,
+    preview: null
   },
 
   coversTemp: path.join(assets.temp,"covers"),
@@ -114,7 +113,7 @@ var musics = {
             musics.index.list[data.album_artist].albums[data.album][data.track].path = file
             musics.progress.analyze.value++
             log(`Avancée de l'analyse: ${musics.progress.analyze.value}/${list.length} : ${data.album_artist}/ ${data.album}/ ${data.title} // ${file}`)
-            musics.ipcValue.select.sender.send("select-progress", musics.progress.analyze.value, musics.progress.analyze.max)
+            musics.ipcValue.select.sender.send("select-progress-analyze", musics.progress.analyze.value, musics.progress.analyze.max)
           }
         })
       })
@@ -161,8 +160,9 @@ var musics = {
             assets.download(data.images[data.images.length - 1], path.join(musics.coversTemp,`${artist}.jpg`), () =>{
               musics.progress.download.value++
               log(`Téléchargement ${musics.progress.download.value}/${musics.progress.download.max}`)
+              musics.ipcValue.select.sender.send("select-progress-download", musics.progress.download.value, musics.progress.download.max)
               if(musics.progress.download.value === musics.progress.download.max){
-                musics.ipcValue.select.sender.send("select-done")
+                musics.done()
               }
             })
           }
@@ -207,8 +207,9 @@ var musics = {
             assets.download(data.images[data.images.length - 1], path.join(musics.coversTemp,artist,`${album}.jpg`), () => {
               musics.progress.download.value++
               log(`Téléchargement ${musics.progress.download.value}/${musics.progress.download.max}`)
+              musics.ipcValue.select.sender.send("select-progress-download", musics.progress.download.value, musics.progress.download.max)
               if(musics.progress.download.value === musics.progress.download.max){
-                musics.ipcValue.select.sender.send("select-done")
+                musics.done()
               }
             })
           }
@@ -220,8 +221,14 @@ var musics = {
         assets.copy(path.resolve(__dirname,`../assets/images/default-album${rand}.jpg`), path.join(musics.coversTemp,artist,`${album}.jpg`))
       }
     }
+  },
+  done: () => {
+    musics.ipcValue.select.sender.send("select-done")
+    musics.ipcValue.preview.sender.send("preview-display", musics.index, assets.temp)
   }
 }
+
+musics.ini()
 
 ipc.on("select-upload", (event, dir) =>{
   if (fs.statSync(dir).isDirectory()){
@@ -292,6 +299,10 @@ ipc.on("select-analyze", (event) => {
       log("Pas de connexion internet.")
     }
   });
+})
+
+ipc.on("ipc-preview", (event) => {
+  musics.ipcValue.preview = event
 })
 
 function log (args, level) {
