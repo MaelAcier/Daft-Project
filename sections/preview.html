@@ -1,7 +1,7 @@
 <section>
   <div class="uk-section uk-section-default">
     <div class="uk-container">
-      <h1>Switcher</h1>
+      <h1>Prévisualisation des musiques</h1>
         <div>
             <ul class="uk-tab" uk-switcher="animation: uk-animation-fade">
                 <li><a href="#">Aperçu</a></li>
@@ -17,10 +17,10 @@
                             <div class="uk-position-relative uk-visible-toggle uk-light">
                                 <ul class="uk-slideshow-items" id="preview-slideshow">
                                     <li>
-                                        <img src="assets/images/Daft Punk.jpg" alt="" uk-cover>
+                                        <img src="assets/images/album-slideshow.jpg" alt="" uk-cover>
                                         <div class="uk-position-center uk-position-small uk-text-center">
-                                            <h2 uk-slideshow-parallax="x: 100,-100">Heading</h2>
-                                            <p uk-slideshow-parallax="x: 200,-200">Lorem ipsum dolor sit amet.</p>
+                                            <h2 uk-slideshow-parallax="x: 100,-100"><a>Album</a></h2>
+                                            <p uk-slideshow-parallax="x: 200,-200">Artiste</p>
                                         </div>
                                     </li>
                                 </ul>
@@ -32,9 +32,6 @@
     
                             <ul class="uk-dotnav uk-flex-center uk-margin" id="preview-slideshow-item">
                                 <li uk-slideshow-item="0"><a href="#">Item 1</a></li>
-                                <li uk-slideshow-item="1"><a href="#">Item 2</a></li>
-                                <li uk-slideshow-item="2"><a href="#">Item 3</a></li>
-                                <li uk-slideshow-item="3"><a href="#">Item 4</a></li>
                             </ul>
     
                         </div>
@@ -43,35 +40,24 @@
                   
                     <div class="uk-grid-small" uk-grid>
                         <div class="uk-width-1-3@m">
-                            <div class="uk-card uk-card-default">
+                            <div class="uk-card uk-card-default" id="preview-album">
                                 <div class="uk-card-media-top uk-text-center">
-                                    <img src="assets/images/Daft%20Punk.png" alt="">
+                                    <img src="assets/images/album-slideshow.jpg" alt="">
                                 </div>
                                 <div class="uk-card-body">
-                                    <h3 class="uk-card-title">Human After All</h3>
-                                    <p>Daft Punk</p>
+                                    <h3 class="uk-card-title">Album</h3>
+                                    <p>Artiste</p>
                                 </div>
                             </div>
-        
                         </div>
+
                         <div class="uk-width-expand@m">
-                            <ul class="uk-list uk-list-striped">
+                            <ul class="uk-list uk-list-striped" id="preview-tracks">
                                 <li>List item 1</li>
                                 <li>List item 2</li>
                                 <li>List item 3</li>
                                 <li>List item 4 with some more text wrapping into the next line</li>
-                                <li>List item 5
-                                    <ul>
-                                        <li>List item 1</li>
-                                        <li>List item 3
-                                            <ul>
-                                                <li>List item 1</li>
-                                                <li>List item 2</li>
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li>List item 6</li>
+                                <li>List item 5</li>
                             </ul>
                         </div>
                     </div>
@@ -80,32 +66,30 @@
 
                     <div class="uk-grid-small" uk-grid>
                         <div class="uk-width-1-3@m">
-                            <div class="uk-card uk-card-default">
+                            <div class="uk-card uk-card-default" id="preview-artist">
                                 <div class="uk-card-media-top uk-text-center">
-                                    <img src="assets/images/Daft%20Punk.png" alt="">
+                                    <img src="assets/images/artist.jpg" alt="">
                                 </div>
                                 <div class="uk-card-body">
-                                    <h3 class="uk-card-title">Daft Punk</h3>
+                                    <h3 class="uk-card-title">Artiste</h3>
                                 </div>
                             </div>
         
                         </div>
                         <div class="uk-width-expand@m">
                             <ul class="uk-list uk-list-striped">
-                                <li>Genres
+                                <li><b>Genres</b>
                                     <ul>
-                                        <li>Electro</li>
-                                        <li>french touch</li>
+                                        <li id="preview-tags">Electro</li>
                                     </ul>
                                 </li>
-                                <li>Artistes similaires
+                                <li><b>Artistes similaires</b>
                                     <ul>
-                                        <li>Justice</li>
-                                        <li>test</li>
+                                        <li id="preview-similar">Justice</li>
                                     </ul>
                                 </li>
-                                <li>Biographie
-                                    <ul>
+                                <li><b>Biographie</b>
+                                    <ul id="preview-summary">
                                       <li>bio</li>
                                     </ul>
                                 </li>
@@ -125,7 +109,6 @@
                   
                   
                   
-                  Hello! <a href="#" uk-switcher-item="2">Switch to tab 3</a></li>
                 <li>
                     <h3>Divider</h3>
 
@@ -150,12 +133,6 @@
                   
                   Hello again! <a href="#" uk-switcher-item="next">Next tab</a></li>
                 <li>Bazinga! <a href="#" uk-switcher-item="previous">Previous tab</a></li>
-                <li>You will never see me!</li>
-            </ul>
-            <ul class="uk-switcher uk-margin">
-                <li>Hello! The first item.</li>
-                <li>Hello again! The second item.</li>
-                <li>Bazinga! The third item.</li>
                 <li>You will never see me!</li>
             </ul>
         </div>

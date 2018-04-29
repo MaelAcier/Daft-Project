@@ -34,6 +34,7 @@ var musics = {
   },
 
   services: {
+    internet: "up",
     lastFm: "up"
   },
 
@@ -92,7 +93,12 @@ var musics = {
             if (!Object.keys(musics.index.list).includes(data.album_artist)) {
               musics.index.list[data.album_artist] = {}
               musics.index.list[data.album_artist].albums = {}
-              musics.request.artist.lastFm(data.album_artist)
+              if (musics.services.internet === "up"){
+                musics.request.artist.lastFm(data.album_artist)
+              }
+              else {
+                musics.request.artist.default(data.album_artist)
+              }
             }
             if (!Object.keys(musics.index.list[data.album_artist].albums).includes(data.album)) {
               musics.index.list[data.album_artist].albums[data.album] = {}
@@ -102,7 +108,12 @@ var musics = {
                 if (err) {
                   console.error('Error writing cover art')
                   log(`Pochette (${data.album}): ${err}`, 1)
-                  musics.request.album.lastFm(data.album_artist, data.album)
+                  if (musics.services.internet === "up"){
+                    musics.request.album.lastFm(data.album_artist, data.album)
+                  }
+                  else {
+                    musics.request.album.default(data.album_artist, data.album)
+                  }
                 } else console.log('Cover art added')
                 log(`Pochette ajoutée: ${data.album}`)
               })
@@ -171,6 +182,8 @@ var musics = {
       default: (artist) => {
         let rand = assets.getRandomInt(1, 3)
         log(`Requête par défaut: ${artist}`)
+        musics.index.list[artist].summary = "Pas de biographie disponible."
+        musics.index.list[artist].similar = ["Pas d'artistes similaires disponibles."]
         assets.copy(path.resolve(__dirname,`../assets/images/default-artist${rand}.jpg`), path.join(musics.coversTemp,`${artist}.jpg`))
       }
     },
@@ -295,10 +308,16 @@ ipc.on("select-analyze", (event) => {
       log("Connexion internet.")
       musics.analyze.musics(musics.received.export)
     } else {
+      musics.services.internet = "down"
+      musics.analyze.musics(musics.received.export)
       event.sender.send('select-no-internet')
       log("Pas de connexion internet.")
     }
   });
+})
+
+ipc.on("select-continue", (event) => {
+  musics.done()
 })
 
 ipc.on("ipc-preview", (event) => {

@@ -8,6 +8,8 @@ const select = {
   file: document.getElementById('select-file'),
   list: document.getElementById('select-list'),
   analyze: document.getElementById('select-analyze'),
+  retry: document.getElementById('select-retry'),
+  continue: document.getElementById('select-continue'),
   bar: {
     analyze: document.getElementById('select-bar-analyze'),
     download: document.getElementById('select-bar-download'),
@@ -41,6 +43,18 @@ select.analyze.addEventListener('click', (event) => {
   select.bar.download.max = 1
   select.spinner.setAttribute("uk-spinner", "")
   ipc.send("select-analyze")
+})
+
+select.retry.addEventListener('click', (event) => {
+  select.bar.analyze.value = 0
+  select.bar.analyze.max = 1
+  select.bar.download.value = 0
+  select.bar.download.max = 1
+  ipc.send("select-analyze")
+})
+
+select.continue.addEventListener('click', (event) => {
+  ipc.send("select-continue")
 })
 
 select.list.addEventListener('click', (event) => {
