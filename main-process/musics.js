@@ -75,6 +75,8 @@ var musics = {
       musics.progress.analyze.max = list.length
       log(`Analyse de ${list.length} musiques: ${list.join('\n')}`)
       musics.index.list = {}
+      musics.index.error = []
+      musics.index.missingData = []
       list.forEach((file)=>{
         ffmetadata.read(file, (err, data) => {
           if (err) {
@@ -184,6 +186,7 @@ var musics = {
         log(`Requête par défaut: ${artist}`)
         musics.index.list[artist].summary = "Pas de biographie disponible."
         musics.index.list[artist].similar = ["Pas d'artistes similaires disponibles."]
+        musics.index.list[artist].tags = ["Pas de genres disponibles."]
         assets.copy(path.resolve(__dirname,`../assets/images/default-artist${rand}.jpg`), path.join(musics.coversTemp,`${artist}.jpg`))
       }
     },
@@ -262,7 +265,7 @@ ipc.on("select-upload", (event, dir) =>{
 ipc.on("select-file-dialog", (event, args) => {
   if (args === "directory"){
     dialog.showOpenDialog({
-      properties: ['openFile', 'openDirectory']
+      properties: ['openDirectory']
     }, function (files) {
       if (files) {
         let dir = files[0]
@@ -319,6 +322,18 @@ ipc.on("select-analyze", (event) => {
 ipc.on("select-continue", (event) => {
   musics.done()
 })
+
+ipc.on("preview-save", (event) =>{
+  dialog.showOpenDialog({
+    title: 'Exporter les musiques',
+    properties: ['openDirectory']
+  }, function (files) {
+    let dir = files[0]
+    event.sender.send('preview-save', dir)
+    console.log(dir)
+  })
+})
+
 
 ipc.on("ipc-preview", (event) => {
   musics.ipcValue.preview = event

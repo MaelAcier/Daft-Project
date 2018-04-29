@@ -81,8 +81,8 @@ document.addEventListener('drop', function (e) {
 
 ipc.on("select-callback", (event, dir, length) => {
   console.log(dir,length)
-  select.analyze.removeAttribute('disabled');
-  select.analyze.classList.remove('uk-animation-shake');
+  select.analyze.removeAttribute('disabled')
+  select.analyze.classList.remove('uk-animation-shake')
   if (length === 1){
     select.list.innerHTML += `<p class="uk-notification-message uk-notification-message-default uk-animation-slide-left" id="${dir}">
                                 <a href="#" class="uk-notification-close close-dir" uk-close></a>

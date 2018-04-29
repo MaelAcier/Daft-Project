@@ -9,7 +9,15 @@ const preview = {
   tracks: document.getElementById('preview-tracks'),
   tags: document.getElementById('preview-tags'),
   similar: document.getElementById('preview-similar'),
-  summary: document.getElementById('preview-summary')
+  summary: document.getElementById('preview-summary'),
+
+  missingData: document.getElementById('preview-missingData'),
+  error: document.getElementById('preview-error'),
+  missingDataNb: document.getElementById('preview-missingData-nb'),
+  errorNb: document.getElementById('preview-error-nb'),
+  list: document.getElementById('preview-list'),
+
+  save: document.getElementById('preview-save')
 }
 var temp
 var index
@@ -33,14 +41,50 @@ ipc.on("preview-display", (event, indexArg, tempArg) => {
       preview.slideshowItem.innerHTML += `<li uk-slideshow-item="${albumNumber}"><a href="#">Item ${albumNumber}</a></li>`
     }
   }
+  var previewShow = document.querySelectorAll(".preview-show-details")
+  previewShow[0].click()
+
+  if(index.missingData.length === 0){
+    preview.missingData.innerHTML = "Aucune musique."
+  }
+  else{
+    preview.missingData.innerHTML = index.missingData.join("\n")
+  }
+  preview.missingDataNb.innerHTML = index.missingData.length
+
+  console.log(index.error)
+  if(index.error.length === 0){
+    preview.error.innerHTML = "Aucune musique."
+  }
+  else{
+    preview.error.innerHTML = index.error.join("\n")
+  }
+  preview.errorNb.innerHTML = index.error.length
+
+  preview.list.innerHTML = ""
+  for (artist in index.list){
+    var artistImage = `${temp}\\covers\\${artist}.jpg`.replace(/\\/g, '\/')
+    preview.list.innerHTML +=`<li>
+                        <span class="uk-icon uk-icon-image uk-margin-small-right" style="background-image: url('${artistImage}');"></span>
+                        <b>${artist}</b></li>`
+    for (album in index.list[artist].albums){
+        var albumImage = `${temp}\\covers\\${artist}\\${album}.jpg`.replace(/\\/g, '\/')
+        preview.list.innerHTML +=`<ul><li>
+                                <span class="uk-icon uk-icon-image uk-margin-small-right" style="background-image: url('${albumImage}');"></span>
+                                <mark>${album}</mark></li></ul>`
+        for (track in index.list[artist].albums[album]){
+            preview.list.innerHTML +=`<ul><li><ul><li>${index.list[artist].albums[album][track].title}</li></ul></li></ul>`
+        }
+    }
+  }
+  preview.save.removeAttribute('disabled')
+  preview.save.classList.remove('uk-animation-shake')
 })
 
-preview.slideshow.addEventListener('click', function (event) {
+preview.slideshow.addEventListener('click', (event) => {
   if (event.target.className === "preview-show-details"){
     let artist = event.target.dataset.artist
     let album = event.target.dataset.album
-    console.log(album)
-    console.log(artist)
     preview.album.innerHTML = `<div class="uk-card-media-top uk-text-center">
                                 <img src="${temp}\\covers\\${artist}\\${album}.jpg" alt="">
                               </div>
@@ -64,7 +108,13 @@ preview.slideshow.addEventListener('click', function (event) {
   }
 })
 
+preview.save.addEventListener('click', (event) => {
+  ipc.send('preview-save')
+})
 
+ipc.on("preview-save", (event) =>{
+  console.log("saved!")
+})
 
 ipc.send("ipc-preview")
 
