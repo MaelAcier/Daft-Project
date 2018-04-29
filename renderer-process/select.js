@@ -32,10 +32,12 @@ select.file.addEventListener('click', (event) => {
 
 select.analyze.addEventListener('click', (event) => {
   ipc.send("select-analyze")
+  select.analyze.parentNode.innerHTML += '<div uk-spinner id="select-spinner"></div>'
 })
 
 document.addEventListener('click', (event) => {
-  if (event.target.parentNode.className=='uk-notification-close close-dir uk-close uk-icon') {
+  console.log(event.target.parentNode)
+  if (event.target.parentNode.className === 'uk-notification-close close-dir uk-close uk-icon') {
     var dir = event.target.parentNode.parentNode
     ipc.send('select-remove', dir.id)
     dir.parentNode.removeChild(dir)
@@ -84,6 +86,11 @@ ipc.on("select-progress", (event, value, max) =>{
 ipc.on('select-no-internet', (event) => {
   document.getElementById('select-no-internet-trigger').click()
   console.log('no internet')
+})
+
+ipc.on("select-done", (event) => {
+  let selectSpinner = document.getElementById('select-spinner')
+  selectSpinner.parentNode.removeChild(selectSpinner)
 })
 
 function log (args, level){

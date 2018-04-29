@@ -26,6 +26,10 @@ var musics = {
     analyze: {
       value: 0,
       max: 1
+    },
+    download: {
+      value: 0,
+      max: 0
     }
   },
 
@@ -63,6 +67,8 @@ var musics = {
 
     },
     musics: (list) => {
+      musics.progress.download.value = 0
+      musics.progress.download.max = 0
       musics.progress.analyze.value = 0
       musics.progress.analyze.max = list.length
       log(`Analyse de ${list.length} musiques: ${list.join('\n')}`)
@@ -149,8 +155,13 @@ var musics = {
               musics.index.list[artist].similar.push(data.similar[similarArtist].name)
             }
             musics.index.list[artist].tags = data.tags
+            musics.progress.download.max++
             assets.download(data.images[data.images.length - 1], path.join(musics.coversTemp,`${artist}.jpg`), () =>{
-              console.log("downloaded.")
+              log(`Téléchargement ${musics.progress.download.value}/${musics.progress.download.max}`)
+              musics.progress.download.value++
+              if(musics.progress.download.value === musics.progress.download.max){
+                musics.ipcValue.select.sender.send("select-done")
+              }
             })
           }
         })
@@ -190,8 +201,13 @@ var musics = {
           }
           else {
             log(`Requête: ${album} / ${artist}`)
+            musics.progress.download.max++
             assets.download(data.images[data.images.length - 1], path.join(musics.coversTemp,artist,`${album}.jpg`), () => {
-              console.log("downloaded.")
+              log(`Téléchargement ${musics.progress.download.value}/${musics.progress.download.max}`)
+              musics.progress.download.value++
+              if(musics.progress.download.value === musics.progress.download.max){
+                musics.ipcValue.select.sender.send("select-done")
+              }
             })
           }
         })
