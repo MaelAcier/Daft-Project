@@ -1,19 +1,83 @@
 const ipc = require('electron').ipcRenderer
 const path = require('path')
 
-log(`${path.basename(__filename)} importé avec succès.`)
-var nb = 0
+const select = {
+  upload: document.getElementById('select-upload'),
+  uploadBar: document.getElementById('select-uploadbar'),
+  directory: document.getElementById('select-directory'),
+  file: document.getElementById('select-file'),
+  list: document.getElementById('select-list'),
+  analyze: document.getElementById('select-analyze')
+}
 
-const test= document.getElementById("test")
 
-setInterval(function() {
-  nb++
-  test.innerHTML += nb +' '
-}, 1000)
+select.upload.addEventListener('drop', function (e) {
+  e.preventDefault();
+  e.stopPropagation();
+  
+  for (let f of e.dataTransfer.files) {
+    console.log('File(s) you dragged here: ', f.path)
+    ipc.send("select-upload", f.path)
+  }
+})
 
+select.directory.addEventListener('click', (event) => {
+  ipc.send("select-file-dialog","directory")
+})
 
-//log("test")
+select.file.addEventListener('click', (event) => {
+  ipc.send("select-file-dialog","file")
+})
+
+select.analyze.addEventListener('click', (event) => {
+  ipc.send("select-analyze")
+})
+
+document.addEventListener('click', (event) => {
+  if (event.target.parentNode.className=='uk-notification-close close-dir uk-close uk-icon') {
+    var dir = event.target.parentNode.parentNode
+    ipc.send('select-remove', dir.id)
+    dir.parentNode.removeChild(dir)
+    if (!select.list.firstChild) {
+      select.analyze.setAttribute("disabled", "");
+      select.analyze.classList.add('uk-animation-shake');
+    }
+  }
+})
+
+document.addEventListener('dragover', function (e) {
+  e.preventDefault();
+  e.stopPropagation();
+})
+document.addEventListener('drop', function (e) {
+  e.preventDefault();
+  e.stopPropagation();
+})
+
+ipc.on("select-callback", (event, dir, length) => {
+  console.log(dir,length)
+  select.analyze.removeAttribute('disabled');
+  select.analyze.classList.remove('uk-animation-shake');
+  if (length === 1){
+    select.list.innerHTML += `<p class="uk-notification-message uk-notification-message-default uk-animation-slide-left" id="${dir}">
+                                <a href="#" class="uk-notification-close close-dir" uk-close></a>
+                                <span class="uk-margin-small-right" uk-icon="icon: copy"></span>
+                                ${dir}
+                              </p>`
+  }
+  else {
+    select.list.innerHTML += `<p class="uk-notification-message uk-notification-message-primary uk-animation-slide-left" id="${dir}">
+                                <a href="#" class="uk-notification-close close-dir" uk-close></a>
+                                <span class="uk-margin-small-right" uk-icon="icon: folder"></span>
+                                ${dir}
+                                <span class="uk-badge">${length}</span>
+                              </p>`
+  }
+})
+
 
 function log (args, level){
   ipc.send('log', __filename, args, level)
 }
+
+log(`${path.basename(__filename)} importé avec succès.`)

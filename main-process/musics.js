@@ -1,7 +1,9 @@
 const fs = require('fs')
 const path = require('path')
+const glob = require('glob')
 const LastFM = require('last-fm')
 const dialog = require('electron').dialog
+const ipc = require('electron').ipcMain
 const logging = require('./logging.js')
 const assets = require('./assets.js')
 var ffmetadata
@@ -13,6 +15,11 @@ var musics = {
     list: {},
     error: {},
     missingData: {}
+  },
+
+  received: {
+    list: {},
+    export: []
   },
 
   services: {
@@ -37,8 +44,9 @@ var musics = {
   },
 
   analyze: {
-    directory: {
-      
+    directory: (dir) => {
+      musics.received.list[dir] = glob.sync(path.join(dir,'/**/@(*.mp3)'))
+      console.log(musics.received.list)
     },
     musics: (list) => {
       musics.index.list = {}
@@ -77,7 +85,7 @@ var musics = {
             musics.index.list[data.album_artist].albums[data.album][data.track] = {}
             musics.index.list[data.album_artist].albums[data.album][data.track].title = data.title
             musics.index.list[data.album_artist].albums[data.album][data.track].path = file
-            console.log(musics.index.list)
+            console.log(JSON.stringify(musics.index.list))
           }
         })
       })
@@ -90,7 +98,6 @@ var musics = {
         lastfm.artistInfo({ name: artist }, (err, data) => {
           if (err) {
             log(`Lastfm: ${err}`, 2)
-          }
             if (err.code === "ENOENT" && err.hostname === "ws.audioscrobbler.com" && err.port === 443 && musics.services.lastFm === "up"){
               dialog.showMessageBox({
                 type: 'info',
@@ -110,6 +117,7 @@ var musics = {
             }
             else if (musics.services.lastFm === "down"){
               musics.request.artist.default(artist)
+            }
           } 
           else {
             log(`Requête LastFm: ${artist}`)
@@ -119,7 +127,9 @@ var musics = {
               musics.index.list[artist].similar.push(data.similar[similarArtist].name)
             }
             musics.index.list[artist].tags = data.tags
-            download(data.images[data.images.length - 1], path.join(musics.coversTemp,`${artist}.jpg`))
+            assets.download(data.images[data.images.length - 1], path.join(musics.coversTemp,`${artist}.jpg`), () =>{
+              console.log("downloaded.")
+            })
           }
         })
       },
@@ -133,30 +143,32 @@ var musics = {
         lastfm.albumInfo({name: album, artistName: artist}, (err, data) => {
           if (err) {
             log(`Lastfm: ${err}`, 2)
-          }
-          if (err.code === "ENOENT" && err.hostname === "ws.audioscrobbler.com" && err.port === 443 && musics.services.lastFm === "up"){
-            dialog.showMessageBox({
-              type: 'info',
-              title: 'Récupération de données',
-              message: "ws.audioscrobbler.com:443 est inaccessible.",
-              buttons: ['Continuer avec un autre service', 'Abandonner']
-              }, (index) => {
-                if (index === 0){
-                  console.log("autre service")
+            if (err.code === "ENOENT" && err.hostname === "ws.audioscrobbler.com" && err.port === 443 && musics.services.lastFm === "up"){
+              dialog.showMessageBox({
+                type: 'info',
+                title: 'Récupération de données',
+                message: "ws.audioscrobbler.com:443 est inaccessible.",
+                buttons: ['Continuer avec un autre service', 'Abandonner']
+                }, (index) => {
+                  if (index === 0){
+                    console.log("autre service")
+                  }
+                  else {
+                    musics.services.lastFm = "down"
+                    musics.request.album.default(artist, album)
+                  }
                 }
-                else {
-                  musics.services.lastFm = "down"
-                  musics.request.album.default(artist, album)
-                }
-              }
-            )
+              )
+            }
           }
           else if (musics.services.lastFm === "down"){
             musics.request.album.default(artist, album)
           }
           else {
             log(`Requête: ${album} / ${artist}`)
-            download(data.images[data.images.length - 1], path.join(musics.coversTemp,artist,`${album}.jpg`))
+            assets.download(data.images[data.images.length - 1], path.join(musics.coversTemp,artist,`${album}.jpg`), () => {
+              console.log("downloaded.")
+            })
           }
         })
       },
@@ -171,58 +183,61 @@ var musics = {
 
 musics.ini()
 
-setTimeout(()=>{
-  musics.analyze.musics(["D:\\Maël\\Documents\\GitHub\\Daft-Project\\music_samples\\By Your Side\\1 - Break Of Dawn.mp3"])
-}, 5000)
+ipc.on("select-upload", (event, dir) =>{
+  if (fs.statSync(dir).isDirectory()){
+    console.log(dir,"is a directory!")
+    musics.analyze.directory(dir)
+    event.sender.send("select-callback", dir, musics.received.list[dir].length)
+  }
+  else if (/\.mp3$/.test(dir)){
+    console.log(dir,"is a music!")
+    musics.received.list[dir] = dir
+    event.sender.send("select-callback", dir, 1)
+  }
+  else{
+    console.log(dir,"is not a music and a folder.")
+  }
+})
 
-/*function analyzeMusics (list) {
-  index = {}
-  var advancement = 0
-  downloadAdvancement = 0
-  downloadProgress = 0
-  list.forEach((file) => {
-    ffmetadata.read(file, (err, data) => {
-      if (err) {
-        console.error('Error reading metadata', err)
-        log(`Lecture des metadata: ${err} pour ${file}`, 2)
-        error.push(file)
-      }
-      else if(data.album_artist===undefined||data.album===undefined||data.track===undefined||data.title===undefined){
-        missingData.push(file)
-      }
-      else {
-        if (!Object.keys(index).includes(data.album_artist)) {
-          index[data.album_artist] = {}
-          downloadAdvancement++
-          artistRequest(data.album_artist)
-        }
-        if (!Object.keys(index[data.album_artist]).includes(data.album)) {
-          index[data.album_artist][data.album] = {}
-
-          let coverpath = path.join(temp,'covers', data.album_artist)
-          assets.createFolder(coverpath)
-          ffmetadata.read(file, {coverPath: [path.join(coverpath,`${data.album}.jpg`)]}, (err) => {
-            if (err) {
-              console.error('Error writing cover art')
-              log(`Pochette (${data.album}): ${err}`, 1)
-              downloadAdvancement++
-              albumRequest(data.album, data.album_artist)
-            } else console.log('Cover art added')
-            log(`Pochette ajoutée: ${data.album}`)
-          })
-        }
-        index[data.album_artist][data.album][data.track] = {}
-        index[data.album_artist][data.album][data.track].title = data.title
-        index[data.album_artist][data.album][data.track].path = file
-        advancement++
-        loading = Math.round(advancement * 100 / musicsList.length)
-        console.log(`${loading}%`)
-        log(`Avancement de l'analyse: ${loading}%`)
-        ipcLoading.sender.send('loading', loading, Math.round(downloadProgress * 100 / downloadAdvancement))
+ipc.on("select-file-dialog", (event, args) => {
+  if (args === "directory"){
+    dialog.showOpenDialog({
+      properties: ['openFile', 'openDirectory']
+    }, function (files) {
+      if (files) {
+        let dir = files[0]
+        console.log(dir)
+        musics.analyze.directory(dir)
+        event.sender.send('select-callback', dir, musics.received.list[dir].length)
       }
     })
-  })
-}*/
+  }
+  else if (args === "file"){
+    dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [
+        {name: 'Musiques', extensions: ['mp3']}
+      ]
+    }, function (files) {
+      if (files) {
+        let dir = files[0]
+        console.log(dir)
+        musics.received.list[dir] = dir
+        event.sender.send('select-callback', dir, 1)
+      }
+    })
+  }
+})
+
+ipc.on("select-remove", (event, id) => {
+  console.log(id)
+  delete musics.received.list[id]
+  console.log(musics.received.list)
+})
+
+/*setTimeout(()=>{
+  musics.analyze.musics(["D:\\Maël\\Documents\\GitHub\\Daft-Project\\music_samples\\By Your Side\\1 - Break Of Dawn.mp3"])
+}, 5000)*/
 
 function log (args, level) {
 	logging.write(__filename, args, level)
