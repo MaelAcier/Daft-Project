@@ -139,23 +139,10 @@ var musics = {
         lastfm.artistInfo({ name: artist }, (err, data) => {
           if (err) {
             log(`Lastfm: ${err}`, 2)
-            if (err.code === "ENOENT" && err.hostname === "ws.audioscrobbler.com" && err.port === 443 && musics.services.lastFm === "up"){
-              dialog.showMessageBox({
-                type: 'info',
-                title: 'Récupération de données',
-                message: "ws.audioscrobbler.com:443 est inaccessible.",
-                buttons: ['Continuer avec un autre service', 'Abandonner']
-                }, (index) => {
-                  if (index === 0){
-                    console.log("autre service")
-                  }
-                  else {
-                    musics.services.lastFm = "down"
-                    log("Erreur LastFm, requête par défaut.",3)
-                    musics.request.artist.default(artist)
-                  }
-                }
-              )
+            if (musics.services.lastFm === "up"){
+              musics.services.lastFm = "down"
+              log("Erreur LastFm, requête par défaut.",3)
+              musics.request.artist.default(artist)
             }
             else if (musics.services.lastFm === "down"){
               musics.request.artist.default(artist)
@@ -182,12 +169,17 @@ var musics = {
         })
       },
       default: (artist) => {
+        musics.progress.download.max++
         let rand = assets.getRandomInt(1, 3)
         log(`Requête par défaut: ${artist}`)
         musics.index.list[artist].summary = "Pas de biographie disponible."
         musics.index.list[artist].similar = ["Pas d'artistes similaires disponibles."]
         musics.index.list[artist].tags = ["Pas de genres disponibles."]
         assets.copy(path.resolve(__dirname,`../assets/images/default-artist${rand}.jpg`), path.join(musics.coversTemp,`${artist}.jpg`))
+        musics.progress.download.value++
+        if(musics.progress.download.value === musics.progress.download.max){
+          musics.done()
+        }
       }
     },
     album: {
@@ -195,23 +187,10 @@ var musics = {
         lastfm.albumInfo({name: album, artistName: artist}, (err, data) => {
           if (err) {
             log(`Lastfm: ${err}`, 2)
-            if (err.code === "ENOENT" && err.hostname === "ws.audioscrobbler.com" && err.port === 443 && musics.services.lastFm === "up"){
-              dialog.showMessageBox({
-                type: 'info',
-                title: 'Récupération de données',
-                message: "ws.audioscrobbler.com:443 est inaccessible.",
-                buttons: ['Continuer avec un autre service', 'Abandonner']
-                }, (index) => {
-                  if (index === 0){
-                    console.log("autre service")
-                  }
-                  else {
-                    musics.services.lastFm = "down"
-                    log("Erreur LastFm, requête par défaut.",3)
-                    musics.request.album.default(artist, album)
-                  }
-                }
-              )
+            if (musics.services.lastFm === "up"){
+              musics.services.lastFm = "down"
+              log("Erreur LastFm, requête par défaut.",3)
+              musics.request.artist.default(artist)
             }
           }
           else if (musics.services.lastFm === "down"){
@@ -232,15 +211,25 @@ var musics = {
         })
       },
       default: (artist, album) => {
+        musics.progress.download.max++
         let rand = assets.getRandomInt(1, 5)
         log(`Requête par défaut: ${artist}/${album}`)
         assets.copy(path.resolve(__dirname,`../assets/images/default-album${rand}.jpg`), path.join(musics.coversTemp,artist,`${album}.jpg`))
+        musics.progress.download.value++
+        if(musics.progress.download.value === musics.progress.download.max){
+          musics.done()
+        }
       }
     }
   },
+
   done: () => {
     musics.ipcValue.select.sender.send("select-done")
     musics.ipcValue.preview.sender.send("preview-display", musics.index, assets.temp)
+  },
+
+  save: (dir) => {
+
   }
 }
 
@@ -331,6 +320,7 @@ ipc.on("preview-save", (event) =>{
     let dir = files[0]
     event.sender.send('preview-save', dir)
     console.log(dir)
+    musics.save(dir)
   })
 })
 
