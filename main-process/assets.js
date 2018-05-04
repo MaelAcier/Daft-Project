@@ -59,6 +59,14 @@ var assets = {
 	
 	getRandomInt: (min, max) => {
 		return Math.floor(Math.random() * (max - min + 1)) + min;
+	},
+
+	digits: (n) => {
+		return (n < 10 ? '0' : '') + n
+	},
+	
+	digits100: (n) => {
+		return (n < 10 ? '00' : n < 100 ? '0' : '') + n
 	}
 }
 

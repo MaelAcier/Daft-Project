@@ -58,6 +58,7 @@ var musics = {
       })
     })
     assets.createFolder(musics.coversTemp)
+    assets.createFolder(path.resolve(__dirname,"../export"))
     log("Fin de l'initialisation.")
   },
 
@@ -229,7 +230,35 @@ var musics = {
   },
 
   save: (dir) => {
-
+    log(`Exportation des musiques.`)
+    log(`Dossier de sortie: ${dir}`)
+    var id = {
+      artist: 0,
+      track: 0
+    }
+    var folder = {
+      artist,
+      track
+    }
+    var stream = fs.createWriteStream(path.join(dir,`index.txt`), {flags: 'a', autoClose: true})
+    for (var artist in musics.index.list) {
+      id.artist++
+      id.track = 0
+      folder.artist = assets.digits(id.artist)
+      assets.createFolder(path.join(dir,folder.artist))
+      stream.write(`${artist}\n`)
+      stream.write(`\\${id.artist}\n`)
+      for (var album in musics.index.list[artist].albums) {
+        stream.write(`\t${album}\n`)
+        for (var track in musics.index.list[artist].albums[album]) {
+          id.track++
+          folder.track = assets.digits100(id.track)
+          assets.copy(musics.index.list[artist].albums[album][track].path, path.join(dir, folder.artist, `${folder.track}.mp3`))
+          stream.write(`\t\t${musics.index.list[artist].albums[album][track].title}\n`)
+          stream.write(`\t\t\\${folder.track}\n`)
+        }
+      }
+    }
   }
 }
 
@@ -315,11 +344,12 @@ ipc.on("select-continue", (event) => {
 ipc.on("preview-save", (event) =>{
   dialog.showOpenDialog({
     title: 'Exporter les musiques',
-    properties: ['openDirectory']
+    properties: ['openDirectory'],
+    defaultPath: path.resolve(__dirname,"../export")
   }, function (files) {
     let dir = files[0]
     event.sender.send('preview-save', dir)
-    console.log(dir)
+    log(`Requête d'export.`)
     musics.save(dir)
   })
 })
