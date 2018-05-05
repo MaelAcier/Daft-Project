@@ -96,12 +96,7 @@ var musics = {
             if (!Object.keys(musics.index.list).includes(data.album_artist)) {
               musics.index.list[data.album_artist] = {}
               musics.index.list[data.album_artist].albums = {}
-              if (musics.services.internet === "up"){
-                musics.request.artist.lastFm(data.album_artist)
-              }
-              else {
-                musics.request.artist.default(data.album_artist)
-              }
+              musics.request.artist.main(data.album_artist)
             }
             if (!Object.keys(musics.index.list[data.album_artist].albums).includes(data.album)) {
               musics.index.list[data.album_artist].albums[data.album] = {}
@@ -111,13 +106,9 @@ var musics = {
                 if (err) {
                   console.error('Error writing cover art')
                   log(`Pochette (${data.album}): ${err}`, 1)
-                  if (musics.services.internet === "up"){
-                    musics.request.album.lastFm(data.album_artist, data.album)
-                  }
-                  else {
-                    musics.request.album.default(data.album_artist, data.album)
-                  }
-                } else console.log('Cover art added')
+                  musics.request.album.main(data.album_artist, data.album)
+                } 
+                else console.log('Cover art added')
                 log(`Pochette ajoutée: ${data.album}`)
               })
               
@@ -128,6 +119,9 @@ var musics = {
             musics.progress.analyze.value++
             log(`Avancée de l'analyse: ${musics.progress.analyze.value}/${list.length} : ${data.album_artist}/ ${data.album}/ ${data.title} // ${file}`)
             musics.ipcValue.select.sender.send("select-progress-analyze", musics.progress.analyze.value, musics.progress.analyze.max)
+            if(musics.progress.download.value === musics.progress.download.max && musics.progress.analyze.value === musics.progress.analyze.max){
+              musics.done()
+            }
           }
         })
       })
@@ -136,6 +130,15 @@ var musics = {
 
   request: {
     artist: {
+      main: (artist) => {
+        musics.progress.download.max++
+        if (musics.services.internet === "up"){
+          musics.request.artist.lastFm(artist)
+        }
+        else {
+          musics.request.artist.default(artist)
+        }
+      },
       lastFm: (artist) => {
         lastfm.artistInfo({ name: artist }, (err, data) => {
           if (err) {
@@ -157,12 +160,11 @@ var musics = {
               musics.index.list[artist].similar.push(data.similar[similarArtist].name)
             }
             musics.index.list[artist].tags = data.tags
-            musics.progress.download.max++
             assets.download(data.images[data.images.length - 1], path.join(musics.coversTemp,`${artist}.jpg`), () =>{
               musics.progress.download.value++
               log(`Téléchargement ${musics.progress.download.value}/${musics.progress.download.max}`)
               musics.ipcValue.select.sender.send("select-progress-download", musics.progress.download.value, musics.progress.download.max)
-              if(musics.progress.download.value === musics.progress.download.max){
+              if(musics.progress.download.value === musics.progress.download.max && musics.progress.analyze.value === musics.progress.analyze.max){
                 musics.done()
               }
             })
@@ -170,7 +172,6 @@ var musics = {
         })
       },
       default: (artist) => {
-        musics.progress.download.max++
         let rand = assets.getRandomInt(1, 3)
         log(`Requête par défaut: ${artist}`)
         musics.index.list[artist].summary = "Pas de biographie disponible."
@@ -178,33 +179,43 @@ var musics = {
         musics.index.list[artist].tags = ["Pas de genres disponibles."]
         assets.copy(path.resolve(__dirname,`../assets/images/default-artist${rand}.jpg`), path.join(musics.coversTemp,`${artist}.jpg`))
         musics.progress.download.value++
-        if(musics.progress.download.value === musics.progress.download.max){
+        log(`Téléchargement ${musics.progress.download.value}/${musics.progress.download.max}`)
+        musics.ipcValue.select.sender.send("select-progress-download", musics.progress.download.value, musics.progress.download.max)
+        if(musics.progress.download.value === musics.progress.download.max && musics.progress.analyze.value === musics.progress.analyze.max){
           musics.done()
         }
       }
     },
     album: {
+      main: (artist, album) => {
+        musics.progress.download.max++
+        if (musics.services.internet === "up"){
+          musics.request.album.lastFm(artist, album)
+        }
+        else {
+          musics.request.album.default(artist, album)
+        }
+      },
       lastFm: (artist, album) => {
         lastfm.albumInfo({name: album, artistName: artist}, (err, data) => {
           if (err) {
-            log(`Lastfm: ${err}`, 2)
             if (musics.services.lastFm === "up"){
+              log(`Lastfm: ${err}`, 2)
               musics.services.lastFm = "down"
               log("Erreur LastFm, requête par défaut.",3)
-              musics.request.artist.default(artist)
+              musics.request.album.default(artist, album)
             }
-          }
-          else if (musics.services.lastFm === "down"){
-            musics.request.album.default(artist, album)
+            else if (musics.services.lastFm === "down"){
+              musics.request.album.default(artist, album)
+            }
           }
           else {
             log(`Requête: ${album} / ${artist}`)
-            musics.progress.download.max++
             assets.download(data.images[data.images.length - 1], path.join(musics.coversTemp,artist,`${album}.jpg`), () => {
               musics.progress.download.value++
               log(`Téléchargement ${musics.progress.download.value}/${musics.progress.download.max}`)
               musics.ipcValue.select.sender.send("select-progress-download", musics.progress.download.value, musics.progress.download.max)
-              if(musics.progress.download.value === musics.progress.download.max){
+              if(musics.progress.download.value === musics.progress.download.max && musics.progress.analyze.value === musics.progress.analyze.max){
                 musics.done()
               }
             })
@@ -212,12 +223,13 @@ var musics = {
         })
       },
       default: (artist, album) => {
-        musics.progress.download.max++
         let rand = assets.getRandomInt(1, 5)
         log(`Requête par défaut: ${artist}/${album}`)
         assets.copy(path.resolve(__dirname,`../assets/images/default-album${rand}.jpg`), path.join(musics.coversTemp,artist,`${album}.jpg`))
         musics.progress.download.value++
-        if(musics.progress.download.value === musics.progress.download.max){
+        log(`Téléchargement ${musics.progress.download.value}/${musics.progress.download.max}`)
+        musics.ipcValue.select.sender.send("select-progress-download", musics.progress.download.value, musics.progress.download.max)
+        if(musics.progress.download.value === musics.progress.download.max && musics.progress.analyze.value === musics.progress.analyze.max){
           musics.done()
         }
       }
