@@ -40,7 +40,8 @@ var musics = {
 
   ipcValue:{
     select: null,
-    preview: null
+    preview: null,
+    index: null
   },
 
   coversTemp: path.join(assets.temp,"covers"),
@@ -145,6 +146,7 @@ var musics = {
             log(`Lastfm: ${err}`, 2)
             if (musics.services.lastFm === "up"){
               musics.services.lastFm = "down"
+              musics.ipcValue.index.sender.send("notification", "<span uk-icon=\'icon: warning\'></span> Serveur LastFm inaccessible.", "error")
               log("Erreur LastFm, requête par défaut.",3)
               musics.request.artist.default(artist)
             }
@@ -202,6 +204,7 @@ var musics = {
             if (musics.services.lastFm === "up"){
               log(`Lastfm: ${err}`, 2)
               musics.services.lastFm = "down"
+              musics.ipcValue.index.sender.send("notification", "<span uk-icon=\'icon: warning\'></span> Serveur LastFm inaccessible.", "error")
               log("Erreur LastFm, requête par défaut.",3)
               musics.request.album.default(artist, album)
             }
@@ -342,15 +345,11 @@ ipc.on("select-analyze", (event) => {
       musics.analyze.musics(musics.received.export)
     } else {
       musics.services.internet = "down"
+      musics.ipcValue.index.sender.send("notification", "<span uk-icon=\'icon: warning\'></span> Pas de connexion internet.", "warning")
       musics.analyze.musics(musics.received.export)
-      event.sender.send('select-no-internet')
       log("Pas de connexion internet.")
     }
   });
-})
-
-ipc.on("select-continue", (event) => {
-  musics.done()
 })
 
 ipc.on("preview-save", (event) =>{
@@ -369,6 +368,10 @@ ipc.on("preview-save", (event) =>{
 
 ipc.on("ipc-preview", (event) => {
   musics.ipcValue.preview = event
+})
+
+ipc.on("ipc-index", (event) => {
+  musics.ipcValue.index = event
 })
 
 function log (args, level) {
