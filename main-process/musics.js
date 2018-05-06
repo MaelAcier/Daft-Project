@@ -59,7 +59,6 @@ var musics = {
       })
     })
     assets.createFolder(musics.coversTemp)
-    assets.createFolder(path.resolve(__dirname,"../export"))
     log("Fin de l'initialisation.")
   },
 
@@ -247,8 +246,32 @@ var musics = {
   save: (dir) => {
     log(`Exportation des musiques.`)
     log(`Dossier de sortie: ${dir}`)
+
+    for (var i=1; i<10; i++){
+      let delFolders = glob.sync(path.join(dir, assets.digits(i) ,'/**'))
+      delFolders.forEach((file)=>{
+        if (fs.statSync(file).isDirectory()){
+          console.log("something wrong")
+        }
+        else {
+          fs.unlink(file, (err) => {
+            if (err) console.log(err)
+            console.log(file,' was deleted')
+          })
+        }
+      })
+      fs.rmdir(path.join(dir, assets.digits(i)), (err) => {
+        console.log(err)
+      })
+    }
+
+    fs.unlink(path.join(dir,`index.txt`), (err) => {
+      if (err) console.log(err)
+      console.log('path/file.txt was deleted')
+    
     var id = {
       artist: 0,
+      album: 0,
       track: 0
     }
     var folder = {
@@ -258,22 +281,32 @@ var musics = {
     var stream = fs.createWriteStream(path.join(dir,`index.txt`), {flags: 'a', autoClose: true})
     for (var artist in musics.index.list) {
       id.artist++
+      console.log("artiste",id.artist, "/" ,Object.keys(musics.index.list).length)
+      //console.log(musics.index.list[artist].albums)
       id.track = 0
+      id.album = 0
       folder.artist = assets.digits(id.artist)
       assets.createFolder(path.join(dir,folder.artist))
       stream.write(`${artist}\n`)
       stream.write(`\\${id.artist}\n`)
       for (var album in musics.index.list[artist].albums) {
+        id.album++
+        console.log("album",id.album, "/" ,Object.keys(musics.index.list[artist].albums).length)
         stream.write(`\t${album}\n`)
         for (var track in musics.index.list[artist].albums[album]) {
           id.track++
+          console.log("track",id.track, "/" ,Object.keys(musics.index.list[artist].albums[album]).length)
           folder.track = assets.digits100(id.track)
           assets.copy(musics.index.list[artist].albums[album][track].path, path.join(dir, folder.artist, `${folder.track}.mp3`))
           stream.write(`\t\t${musics.index.list[artist].albums[album][track].title}\n`)
           stream.write(`\t\t\\${folder.track}\n`)
+          if (id.artist === Object.keys(musics.index.list).length && id.album === Object.keys(musics.index.list[artist].albums).length && id.track === Object.keys(musics.index.list[artist].albums[album]).length){
+            stream.end('\4')//End of transmission
+          }
         }
       }
     }
+    })
   }
 }
 
@@ -349,10 +382,11 @@ ipc.on("select-analyze", (event) => {
       musics.analyze.musics(musics.received.export)
       log("Pas de connexion internet.")
     }
-  });
+  })
 })
 
 ipc.on("preview-save", (event) =>{
+  assets.createFolder(path.resolve(__dirname,"../export"))
   dialog.showOpenDialog({
     title: 'Exporter les musiques',
     properties: ['openDirectory'],
