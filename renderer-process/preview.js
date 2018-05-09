@@ -17,7 +17,8 @@ const preview = {
   errorNb: document.getElementById('preview-error-nb'),
   list: document.getElementById('preview-list'),
 
-  save: document.getElementById('preview-save')
+  save: document.getElementById('preview-save'),
+  saveFolder: document.getElementById('preview-save-folder')
 }
 var temp
 var index
@@ -112,8 +113,8 @@ preview.save.addEventListener('click', (event) => {
   ipc.send('preview-save')
 })
 
-ipc.on("preview-save", (event) =>{
-  console.log("saved!")
+ipc.on("preview-save", (event, dir) =>{
+  preview.saveFolder.innerHTML = `Exportation vers <code>${dir}</code>`
 })
 
 ipc.send("ipc-preview")

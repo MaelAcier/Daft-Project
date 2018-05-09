@@ -32,9 +32,7 @@
                             <ul class="uk-dotnav uk-flex-center uk-margin" id="preview-slideshow-item">
                                 <li uk-slideshow-item="0"><a href="#">Item 1</a></li>
                             </ul>
-    
                         </div>
-    
                     </div>
                   
                     <div class="uk-grid-small" uk-grid>
@@ -52,11 +50,10 @@
 
                         <div class="uk-width-expand@m">
                             <ul class="uk-list uk-list-striped" id="preview-tracks">
-                                <li>List item 1</li>
-                                <li>List item 2</li>
-                                <li>List item 3</li>
-                                <li>List item 4 with some more text wrapping into the next line</li>
-                                <li>List item 5</li>
+                                <li>Musique 1</li>
+                                <li>Musique 2</li>
+                                <li>Musique 3</li>
+                                <li>...</li>
                             </ul>
                         </div>
                     </div>
@@ -79,12 +76,12 @@
                             <ul class="uk-list uk-list-striped">
                                 <li><b>Genres</b>
                                     <ul>
-                                        <li id="preview-tags">genre 1 - genre 2</li>
+                                        <li id="preview-tags">genre 1 - genre 2 - ...</li>
                                     </ul>
                                 </li>
                                 <li><b>Artistes similaires</b>
                                     <ul>
-                                        <li id="preview-similar">artiste 1 - artiste 2</li>
+                                        <li id="preview-similar">artiste 1 - artiste 2 - ...</li>
                                     </ul>
                                 </li>
                                 <li><b>Biographie</b>
@@ -95,8 +92,7 @@
                             </ul>
                         </div>
                     </div>
-                  
-                  
+                    
                 <li>
 
                     <div class="uk-child-width-1-2" uk-grid>
@@ -114,22 +110,23 @@
                           </div>
                         </div>
                         <div>
-                          <div class="uk-card uk-card-default uk-card-hover">
-                            <div class="uk-card-badge"><span class="uk-badge" id="preview-error-nb">0</span></div>
-                            <div class="uk-card-body">
-                                <h3 class="uk-card-title"><span class="uk-label uk-label-danger">Musiques erronées</span></h3>
-                                <p id="preview-error">Lorem ipsum <a href="#">dolor</a> sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                                <p uk-margin>
-                                    <a class="uk-button uk-button-default" href="#">Button</a>
-                                    <a class="uk-button uk-button-text uk-margin-small-left" href="#">Button</a>
-                                </p>
+                            <div class="uk-card uk-card-default uk-card-hover">
+                                <div class="uk-card-badge"><span class="uk-badge" id="preview-error-nb">0</span></div>
+                                <div class="uk-card-body">
+                                    <h3 class="uk-card-title"><span class="uk-label uk-label-danger">Musiques erronées</span></h3>
+                                    <p id="preview-error">Lorem ipsum <a href="#">dolor</a> sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                                    <p uk-margin>
+                                        <a class="uk-button uk-button-default" href="#">Button</a>
+                                        <a class="uk-button uk-button-text uk-margin-small-left" href="#">Button</a>
+                                    </p>
+                                </div>
                             </div>
-                          </div>
                         </div>
                     </div>
 
-
-                      <ul class="uk-list uk-list-divider" id="preview-list">
+                    <hr class="uk-divider-icon">
+ 
+                    <ul class="uk-list uk-list-divider" id="preview-list">
                         <li>Artiste 1</li>
                         <li>Artiste 2
                             <ul>
@@ -141,18 +138,21 @@
                                     </ul>
                                 </li>
                             </ul>
-                          </li>
-                        </ul>
-
-                  </li>
+                        </li>
+                        <li>...</li>
+                    </ul>
+                    
+                </li>
                 <li>
                     <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                  <div class="uk-text-center uk-animation-toggle">
-                    <button class="uk-button uk-button-primary uk-animation-shake" id='preview-save' disabled>
-                      <span class="uk-margin-small-right" uk-icon="icon: push"></span>
-                      Exporter
-                    </button>
-                  </div>
+                    <div class="uk-text-center uk-animation-toggle">
+                        <button class="uk-button uk-button-primary uk-animation-shake" id='preview-save' disabled>
+                            <span class="uk-margin-small-right" uk-icon="icon: push"></span>
+                            Exporter
+                        </button>
+                    </div>
+                    </br>
+                    <div class="uk-alert uk-text-center" id="preview-save-folder"></div>
                 </li>
             </ul>
         </div>

@@ -2,8 +2,7 @@ const ipc = require('electron').ipcRenderer
 const path = require('path')
 
 const select = {
-  upload: document.getElementById('select-upload'),
-  uploadBar: document.getElementById('select-uploadbar'),
+  upload: document.getElementById('select'),
   directory: document.getElementById('select-directory'),
   file: document.getElementById('select-file'),
   list: document.getElementById('select-list'),
@@ -104,6 +103,8 @@ ipc.on("select-done", (event) => {
   select.spinner.removeAttribute("uk-spinner")
   ipc.send("switch-section", "preview")
 })
+
+ipc.send("ipc-select")
 
 function log (args, level){
   ipc.send('log', __filename, args, level)

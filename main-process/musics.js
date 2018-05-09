@@ -104,12 +104,10 @@ var musics = {
               assets.createFolder(coverPath)
               ffmetadata.read(file, {coverPath: [path.join(coverPath,`${data.album}.jpg`)]}, (err) => {
                 if (err) {
-                  console.error('Error writing cover art')
                   log(`Pochette (${data.album}): ${err}`, 1)
                   musics.request.album.main(data.album_artist, data.album)
                 } 
-                else console.log('Cover art added')
-                log(`Pochette ajoutée: ${data.album}`)
+                else log(`Pochette ajoutée: ${data.album}`)
               })
               
             }
@@ -247,65 +245,58 @@ var musics = {
     log(`Exportation des musiques.`)
     log(`Dossier de sortie: ${dir}`)
 
-    for (var i=1; i<10; i++){
+    for (var i=1; i<100; i++){
       let delFolders = glob.sync(path.join(dir, assets.digits(i) ,'/**'))
       delFolders.forEach((file)=>{
         if (fs.statSync(file).isDirectory()){
-          console.log("something wrong")
+          log(`Tentative de suppression de: ${file}`,2)
         }
         else {
           fs.unlink(file, (err) => {
-            if (err) console.log(err)
-            console.log(file,' was deleted')
+            if (err) log(`Tentative de suppression de: ${file} ${err}`,2)
           })
         }
       })
       fs.rmdir(path.join(dir, assets.digits(i)), (err) => {
-        console.log(err)
+        log(`Supression, pas de dossier: ${path.join(dir, assets.digits(i))}`)
       })
     }
 
     fs.unlink(path.join(dir,`index.txt`), (err) => {
-      if (err) console.log(err)
-      console.log('path/file.txt was deleted')
-    
-    var id = {
-      artist: 0,
-      album: 0,
-      track: 0
-    }
-    var folder = {
-      artist,
-      track
-    }
-    var stream = fs.createWriteStream(path.join(dir,`index.txt`), {flags: 'a', autoClose: true})
-    for (var artist in musics.index.list) {
-      id.artist++
-      console.log("artiste",id.artist, "/" ,Object.keys(musics.index.list).length)
-      //console.log(musics.index.list[artist].albums)
-      id.track = 0
-      id.album = 0
-      folder.artist = assets.digits(id.artist)
-      assets.createFolder(path.join(dir,folder.artist))
-      stream.write(`${artist}\n`)
-      stream.write(`\\${id.artist}\n`)
-      for (var album in musics.index.list[artist].albums) {
-        id.album++
-        console.log("album",id.album, "/" ,Object.keys(musics.index.list[artist].albums).length)
-        stream.write(`\t${album}\n`)
-        for (var track in musics.index.list[artist].albums[album]) {
-          id.track++
-          console.log("track",id.track, "/" ,Object.keys(musics.index.list[artist].albums[album]).length)
-          folder.track = assets.digits100(id.track)
-          assets.copy(musics.index.list[artist].albums[album][track].path, path.join(dir, folder.artist, `${folder.track}.mp3`))
-          stream.write(`\t\t${musics.index.list[artist].albums[album][track].title}\n`)
-          stream.write(`\t\t\\${folder.track}\n`)
-          if (id.artist === Object.keys(musics.index.list).length && id.album === Object.keys(musics.index.list[artist].albums).length && id.track === Object.keys(musics.index.list[artist].albums[album]).length){
-            stream.end('\4')//End of transmission
+      if (err) log(`Impossible de réinitialiser index.txt: ${err}`,2)
+      var id = {
+        artist: 0,
+        album: 0,
+        track: 0
+      }
+      var folder = {
+        artist,
+        track
+      }
+      var stream = fs.createWriteStream(path.join(dir,`index.txt`), {flags: 'a', autoClose: true})
+      for (var artist in musics.index.list) {
+        id.artist++
+        id.track = 0
+        id.album = 0
+        folder.artist = assets.digits(id.artist)
+        assets.createFolder(path.join(dir,folder.artist))
+        stream.write(`${artist}\n`)
+        stream.write(`\\${id.artist}\n`)
+        for (var album in musics.index.list[artist].albums) {
+          id.album++
+          stream.write(`\t${album}\n`)
+          for (var track in musics.index.list[artist].albums[album]) {
+            id.track++
+            folder.track = assets.digits100(id.track)
+            assets.copy(musics.index.list[artist].albums[album][track].path, path.join(dir, folder.artist, `${folder.track}.mp3`))
+            stream.write(`\t\t${musics.index.list[artist].albums[album][track].title}\n`)
+            stream.write(`\t\t\\${folder.track}\n`)
+            if (id.artist === Object.keys(musics.index.list).length && id.album === Object.keys(musics.index.list[artist].albums).length && id.track === Object.keys(musics.index.list[artist].albums[album]).length){
+              stream.end('\4')//End of transmission
+            }
           }
         }
       }
-    }
     })
   }
 }
@@ -316,7 +307,12 @@ ipc.on("select-upload", (event, dir) =>{
   if (fs.statSync(dir).isDirectory()){
     log(`Sélection du dossier: ${dir}`)
     musics.analyze.directory(dir)
-    event.sender.send("select-callback", dir, musics.received.list[dir].length)
+    if (musics.received.list[dir].length !== 0){
+      event.sender.send('select-callback', dir, musics.received.list[dir].length)
+    }
+    else {
+      musics.ipcValue.index.sender.send("notification", "<span uk-icon=\'icon: warning\'></span> Aucune musique dans la sélection", "warning")
+    }
   }
   else if (/\.mp3$/.test(dir)){
     log(`Sélection de la musique: ${dir}`)
@@ -337,7 +333,12 @@ ipc.on("select-file-dialog", (event, args) => {
         let dir = files[0]
         log(`Dialogue: Sélection de dossier: ${dir}`)
         musics.analyze.directory(dir)
-        event.sender.send('select-callback', dir, musics.received.list[dir].length)
+        if (musics.received.list[dir].length !== 0){
+          event.sender.send('select-callback', dir, musics.received.list[dir].length)
+        }
+        else {
+          musics.ipcValue.index.sender.send("notification", "<span uk-icon=\'icon: warning\'></span> Aucune musique dans la sélection", "warning")
+        }
       }
     })
   }
@@ -365,7 +366,6 @@ ipc.on("select-remove", (event, id) => {
 
 ipc.on("select-analyze", (event) => {
   log("Début de l'analyse totale.")
-  musics.ipcValue.select = event
   musics.received.export = []
   for (var currentDir in musics.received.list){
     musics.received.list[currentDir].forEach((file) => {
@@ -378,7 +378,7 @@ ipc.on("select-analyze", (event) => {
       musics.analyze.musics(musics.received.export)
     } else {
       musics.services.internet = "down"
-      musics.ipcValue.index.sender.send("notification", "<span uk-icon=\'icon: warning\'></span> Pas de connexion internet.", "warning")
+      musics.ipcValue.index.sender.send("notification", "<span uk-icon=\'icon: warning\'></span> Pas de connexion internet", "warning")
       musics.analyze.musics(musics.received.export)
       log("Pas de connexion internet.")
     }
@@ -406,6 +406,10 @@ ipc.on("ipc-preview", (event) => {
 
 ipc.on("ipc-index", (event) => {
   musics.ipcValue.index = event
+})
+
+ipc.on("ipc-select", (event) => {
+  musics.ipcValue.select = event
 })
 
 function log (args, level) {
