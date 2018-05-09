@@ -85,37 +85,43 @@ var musics = {
             musics.index.error.push(file)
             musics.progress.analyze.value++
           }
-          else if(data.album_artist===undefined||data.album===undefined||data.track===undefined||data.title===undefined){
+          else if(data.album===undefined||data.track===undefined||data.title===undefined||(data.album_artist===undefined&&data.artist===undefined)){
             log(`Manque de données pour ${file}`, 1)
             musics.index.missingData.push(file)
             musics.progress.analyze.value++
           }
           else {
-            log(`Musique analysée: ${data.album_artist}/ ${data.album}/ ${data.title} // ${file}`)
-  
-            if (!Object.keys(musics.index.list).includes(data.album_artist)) {
-              musics.index.list[data.album_artist] = {}
-              musics.index.list[data.album_artist].albums = {}
-              musics.request.artist.main(data.album_artist)
+            let currentArtist
+            if(data.album_artist!==undefined){
+              currentArtist = data.album_artist
             }
-            if (!Object.keys(musics.index.list[data.album_artist].albums).includes(data.album)) {
-              musics.index.list[data.album_artist].albums[data.album] = {}
-              let coverPath = path.join(musics.coversTemp, data.album_artist)
+            else {
+              currentArtist = data.artist
+            }
+            log(`Musique analysée: ${currentArtist}/ ${data.album}/ ${data.title} // ${file}`)
+            if (!Object.keys(musics.index.list).includes(currentArtist)) {
+              musics.index.list[currentArtist] = {}
+              musics.index.list[currentArtist].albums = {}
+              musics.request.artist.main(currentArtist)
+            }
+            if (!Object.keys(musics.index.list[currentArtist].albums).includes(data.album)) {
+              musics.index.list[currentArtist].albums[data.album] = {}
+              let coverPath = path.join(musics.coversTemp, currentArtist)
               assets.createFolder(coverPath)
               ffmetadata.read(file, {coverPath: [path.join(coverPath,`${data.album}.jpg`)]}, (err) => {
                 if (err) {
                   log(`Pochette (${data.album}): ${err}`, 1)
-                  musics.request.album.main(data.album_artist, data.album)
+                  musics.request.album.main(currentArtist, data.album)
                 } 
                 else log(`Pochette ajoutée: ${data.album}`)
               })
               
             }
-            musics.index.list[data.album_artist].albums[data.album][data.track] = {}
-            musics.index.list[data.album_artist].albums[data.album][data.track].title = data.title
-            musics.index.list[data.album_artist].albums[data.album][data.track].path = file
+            musics.index.list[currentArtist].albums[data.album][data.track] = {}
+            musics.index.list[currentArtist].albums[data.album][data.track].title = data.title
+            musics.index.list[currentArtist].albums[data.album][data.track].path = file
             musics.progress.analyze.value++
-            log(`Avancée de l'analyse: ${musics.progress.analyze.value}/${list.length} : ${data.album_artist}/ ${data.album}/ ${data.title} // ${file}`)
+            log(`Avancée de l'analyse: ${musics.progress.analyze.value}/${list.length} : ${currentArtist}/ ${data.album}/ ${data.title} // ${file}`)
             musics.ipcValue.select.sender.send("select-progress-analyze", musics.progress.analyze.value, musics.progress.analyze.max)
             if(musics.progress.download.value === musics.progress.download.max && musics.progress.analyze.value === musics.progress.analyze.max){
               musics.done()
