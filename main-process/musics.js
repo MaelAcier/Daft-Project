@@ -1,288 +1,423 @@
-const os = require('os')
 const fs = require('fs')
 const path = require('path')
 const glob = require('glob')
 const LastFM = require('last-fm')
-const ffmetadata = require('ffmetadata')
-const electron = require('electron')
+const dialog = require('electron').dialog
 const ipc = require('electron').ipcMain
-const {dialog} = require('electron')
 const logging = require('./logging.js')
 const assets = require('./assets.js')
+var ffmetadata
 
 const lastfm = new LastFM('e01234609d70b34055b389734707ac0a')
-const temp = path.join(os.tmpdir(),`${electron.app.getName()}-${electron.app.getVersion()}`)
 
-var directory = {},
-  musicsList = []
-  index = {},
-  error = [],
-  summary = {},
-  loading = 0,
-  downloadAdvancement = 0,
-  downloadProgress = 0,
-  ipcLoading = null,
-  ipcPreview = null,
-  exportFolder = path.resolve(__dirname,"../"),
-  connection = true
+var musics = {
+  index: {
+    list: {},
+    error: [],
+    missingData: []
+  },
 
-log(`Répertoire temporaire: ${temp}`)
-createFolder(temp)
-const coverPATH = path.join(temp,'covers')
-createFolder(coverPATH)
+  received: {
+    list: {},
+    export: []
+  },
 
-console.log('tmp', temp)
-
-
-ipc.on('open-file-dialog', (event, args) => {
-  dialog.showOpenDialog({
-    properties: ['openFile', 'openDirectory']
-  }, function (files) {
-    if (files) {
-      let selectedFolder = files[0]
-      log(`Répertoire musical: ${selectedFolder}`)
-      if (args === 'select') {
-        log(`Sélection unique.`)
-        directory = {}
-      }
-      analyzeDirectory(selectedFolder)
-      let number = directory[selectedFolder].length
-      log(`Il y a ${number} musiques`)
-      event.sender.send('selected-directory', selectedFolder, number)
+  progress:{
+    analyze: {
+      value: 0,
+      max: 1
+    },
+    download: {
+      value: 0,
+      max: 1
     }
-  })
+  },
+
+  services: {
+    internet: "up",
+    lastFm: "up"
+  },
+
+  ipcValue:{
+    select: null,
+    preview: null,
+    index: null
+  },
+
+  coversTemp: path.join(assets.temp,"covers"),
+
+  ini: () => {
+    let ffmetadataPath = path.resolve(__dirname,"../node_modules/ffmetadata/index.js")
+    log(`Initialisation: adresse ffmetadata: ${ffmetadataPath}`)
+    fs.readFile(ffmetadataPath, 'utf-8', function(err, data){
+      if (err) throw err;
+      var newData = data.replace('ffmpeg = spawn.bind(null, process.env.FFMPEG_PATH || "ffmpeg"),', `ffmpeg = spawn.bind(null, "./resources/ffmpeg"),`);
+      fs.writeFile(ffmetadataPath, newData, 'utf-8', function (err) {
+        if (err) throw err;
+        log("Ecriture ffmetadata complète.")
+        ffmetadata = require('ffmetadata')
+      })
+    })
+    assets.createFolder(musics.coversTemp)
+    log("Fin de l'initialisation.")
+  },
+
+  analyze: {
+    directory: (dir) => {
+      musics.received.list[dir] = glob.sync(path.join(dir,'/**/@(*.mp3)'))
+      log(`Analyse de ${dir}`)
+      log(`Les musiques trouvées sont: ${musics.received.list[dir].join('\n')}`)
+
+    },
+    musics: (list) => {
+      musics.progress.download.value = 0
+      musics.progress.download.max = 0
+      musics.progress.analyze.value = 0
+      musics.progress.analyze.max = list.length
+      log(`Analyse de ${list.length} musiques: ${list.join('\n')}`)
+      musics.index.list = {}
+      musics.index.error = []
+      musics.index.missingData = []
+      list.forEach((file)=>{
+        ffmetadata.read(file, (err, data) => {
+          if (err) {
+            log(`Impossible de lire les données de ${file}: ${err}`, 2)
+            musics.index.error.push(file)
+            musics.progress.analyze.value++
+          }
+          else if(data.album===undefined||data.track===undefined||data.title===undefined||(data.album_artist===undefined&&data.artist===undefined)){
+            log(`Manque de données pour ${file}`, 1)
+            musics.index.missingData.push(file)
+            musics.progress.analyze.value++
+          }
+          else {
+            let currentArtist
+            if(data.album_artist!==undefined){
+              currentArtist = data.album_artist
+            }
+            else {
+              currentArtist = data.artist
+            }
+            log(`Musique analysée: ${currentArtist}/ ${data.album}/ ${data.title} // ${file}`)
+            if (!Object.keys(musics.index.list).includes(currentArtist)) {
+              musics.index.list[currentArtist] = {}
+              musics.index.list[currentArtist].albums = {}
+              musics.request.artist.main(currentArtist)
+            }
+            if (!Object.keys(musics.index.list[currentArtist].albums).includes(data.album)) {
+              musics.index.list[currentArtist].albums[data.album] = {}
+              let coverPath = path.join(musics.coversTemp, currentArtist)
+              assets.createFolder(coverPath)
+              ffmetadata.read(file, {coverPath: [path.join(coverPath,`${data.album}.jpg`)]}, (err) => {
+                if (err) {
+                  log(`Pochette (${data.album}): ${err}`, 1)
+                  musics.request.album.main(currentArtist, data.album)
+                } 
+                else log(`Pochette ajoutée: ${data.album}`)
+              })
+              
+            }
+            musics.index.list[currentArtist].albums[data.album][data.track] = {}
+            musics.index.list[currentArtist].albums[data.album][data.track].title = data.title
+            musics.index.list[currentArtist].albums[data.album][data.track].path = file
+            musics.progress.analyze.value++
+            log(`Avancée de l'analyse: ${musics.progress.analyze.value}/${list.length} : ${currentArtist}/ ${data.album}/ ${data.title} // ${file}`)
+            musics.ipcValue.select.sender.send("select-progress-analyze", musics.progress.analyze.value, musics.progress.analyze.max)
+            if(musics.progress.download.value === musics.progress.download.max && musics.progress.analyze.value === musics.progress.analyze.max){
+              musics.done()
+            }
+          }
+        })
+      })
+    }
+  },
+
+  request: {
+    artist: {
+      main: (artist) => {
+        musics.progress.download.max++
+        if (musics.services.internet === "up"){
+          musics.request.artist.lastFm(artist)
+        }
+        else {
+          musics.request.artist.default(artist)
+        }
+      },
+      lastFm: (artist) => {
+        lastfm.artistInfo({ name: artist }, (err, data) => {
+          if (err) {
+            log(`Lastfm: ${err}`, 2)
+            if (musics.services.lastFm === "up"){
+              musics.services.lastFm = "down"
+              musics.ipcValue.index.sender.send("notification", "<span uk-icon=\'icon: warning\'></span> Serveur LastFm inaccessible.", "error")
+              log("Erreur LastFm, requête par défaut.",3)
+              musics.request.artist.default(artist)
+            }
+            else if (musics.services.lastFm === "down"){
+              musics.request.artist.default(artist)
+            }
+          } 
+          else {
+            log(`Requête LastFm: ${artist}`)
+            musics.index.list[artist].summary = data.summary
+            musics.index.list[artist].similar = []
+            for (similarArtist in data.similar){
+              musics.index.list[artist].similar.push(data.similar[similarArtist].name)
+            }
+            musics.index.list[artist].tags = data.tags
+            assets.download(data.images[data.images.length - 1], path.join(musics.coversTemp,`${artist}.jpg`), () =>{
+              musics.progress.download.value++
+              log(`Téléchargement ${musics.progress.download.value}/${musics.progress.download.max}`)
+              musics.ipcValue.select.sender.send("select-progress-download", musics.progress.download.value, musics.progress.download.max)
+              if(musics.progress.download.value === musics.progress.download.max && musics.progress.analyze.value === musics.progress.analyze.max){
+                musics.done()
+              }
+            })
+          }
+        })
+      },
+      default: (artist) => {
+        let rand = assets.getRandomInt(1, 3)
+        log(`Requête par défaut: ${artist}`)
+        musics.index.list[artist].summary = "Pas de biographie disponible."
+        musics.index.list[artist].similar = ["Pas d'artistes similaires disponibles."]
+        musics.index.list[artist].tags = ["Pas de genres disponibles."]
+        assets.copy(path.resolve(__dirname,`../assets/images/default-artist${rand}.jpg`), path.join(musics.coversTemp,`${artist}.jpg`))
+        musics.progress.download.value++
+        log(`Téléchargement ${musics.progress.download.value}/${musics.progress.download.max}`)
+        musics.ipcValue.select.sender.send("select-progress-download", musics.progress.download.value, musics.progress.download.max)
+        if(musics.progress.download.value === musics.progress.download.max && musics.progress.analyze.value === musics.progress.analyze.max){
+          musics.done()
+        }
+      }
+    },
+    album: {
+      main: (artist, album) => {
+        musics.progress.download.max++
+        if (musics.services.internet === "up"){
+          musics.request.album.lastFm(artist, album)
+        }
+        else {
+          musics.request.album.default(artist, album)
+        }
+      },
+      lastFm: (artist, album) => {
+        lastfm.albumInfo({name: album, artistName: artist}, (err, data) => {
+          if (err) {
+            if (musics.services.lastFm === "up"){
+              log(`Lastfm: ${err}`, 2)
+              musics.services.lastFm = "down"
+              musics.ipcValue.index.sender.send("notification", "<span uk-icon=\'icon: warning\'></span> Serveur LastFm inaccessible.", "error")
+              log("Erreur LastFm, requête par défaut.",3)
+              musics.request.album.default(artist, album)
+            }
+            else if (musics.services.lastFm === "down"){
+              musics.request.album.default(artist, album)
+            }
+          }
+          else {
+            log(`Requête: ${album} / ${artist}`)
+            assets.download(data.images[data.images.length - 1], path.join(musics.coversTemp,artist,`${album}.jpg`), () => {
+              musics.progress.download.value++
+              log(`Téléchargement ${musics.progress.download.value}/${musics.progress.download.max}`)
+              musics.ipcValue.select.sender.send("select-progress-download", musics.progress.download.value, musics.progress.download.max)
+              if(musics.progress.download.value === musics.progress.download.max && musics.progress.analyze.value === musics.progress.analyze.max){
+                musics.done()
+              }
+            })
+          }
+        })
+      },
+      default: (artist, album) => {
+        let rand = assets.getRandomInt(1, 5)
+        log(`Requête par défaut: ${artist}/${album}`)
+        assets.copy(path.resolve(__dirname,`../assets/images/default-album${rand}.jpg`), path.join(musics.coversTemp,artist,`${album}.jpg`))
+        musics.progress.download.value++
+        log(`Téléchargement ${musics.progress.download.value}/${musics.progress.download.max}`)
+        musics.ipcValue.select.sender.send("select-progress-download", musics.progress.download.value, musics.progress.download.max)
+        if(musics.progress.download.value === musics.progress.download.max && musics.progress.analyze.value === musics.progress.analyze.max){
+          musics.done()
+        }
+      }
+    }
+  },
+
+  done: () => {
+    musics.ipcValue.select.sender.send("select-done")
+    musics.ipcValue.preview.sender.send("preview-display", musics.index, assets.temp)
+  },
+
+  save: (dir) => {
+    log(`Exportation des musiques.`)
+    log(`Dossier de sortie: ${dir}`)
+
+    for (var i=1; i<100; i++){
+      let delFolders = glob.sync(path.join(dir, assets.digits(i) ,'/**'))
+      delFolders.forEach((file)=>{
+        if (fs.statSync(file).isDirectory()){
+          log(`Tentative de suppression de: ${file}`,2)
+        }
+        else {
+          fs.unlink(file, (err) => {
+            if (err) log(`Tentative de suppression de: ${file} ${err}`,2)
+          })
+        }
+      })
+      fs.rmdir(path.join(dir, assets.digits(i)), (err) => {
+        log(`Supression, pas de dossier: ${path.join(dir, assets.digits(i))}`)
+      })
+    }
+
+    fs.unlink(path.join(dir,`index.txt`), (err) => {
+      if (err) log(`Impossible de réinitialiser index.txt: ${err}`,2)
+      var id = {
+        artist: 0,
+        album: 0,
+        track: 0
+      }
+      var folder = {
+        artist,
+        track
+      }
+      var stream = fs.createWriteStream(path.join(dir,`index.txt`), {flags: 'a', autoClose: true})
+      for (var artist in musics.index.list) {
+        id.artist++
+        id.track = 0
+        id.album = 0
+        folder.artist = assets.digits(id.artist)
+        assets.createFolder(path.join(dir,folder.artist))
+        stream.write(`${artist}\n`)
+        stream.write(`\\${id.artist}\n`)
+        for (var album in musics.index.list[artist].albums) {
+          id.album++
+          stream.write(`\t${album}\n`)
+          for (var track in musics.index.list[artist].albums[album]) {
+            id.track++
+            folder.track = assets.digits100(id.track)
+            assets.copy(musics.index.list[artist].albums[album][track].path, path.join(dir, folder.artist, `${folder.track}.mp3`))
+            stream.write(`\t\t${musics.index.list[artist].albums[album][track].title}\n`)
+            stream.write(`\t\t\\${folder.track}\n`)
+            if (id.artist === Object.keys(musics.index.list).length && id.album === Object.keys(musics.index.list[artist].albums).length && id.track === Object.keys(musics.index.list[artist].albums[album]).length){
+              stream.end('\4')//End of transmission
+            }
+          }
+        }
+      }
+    })
+  }
+}
+
+musics.ini()
+
+ipc.on("select-upload", (event, dir) =>{
+  if (fs.statSync(dir).isDirectory()){
+    log(`Sélection du dossier: ${dir}`)
+    musics.analyze.directory(dir)
+    if (musics.received.list[dir].length !== 0){
+      event.sender.send('select-callback', dir, musics.received.list[dir].length)
+    }
+    else {
+      musics.ipcValue.index.sender.send("notification", "<span uk-icon=\'icon: warning\'></span> Aucune musique dans la sélection", "warning")
+    }
+  }
+  else if (/\.mp3$/.test(dir)){
+    log(`Sélection de la musique: ${dir}`)
+    musics.received.list[dir] = dir
+    event.sender.send("select-callback", dir, 1)
+  }
+  else{
+    log("La sélection n'est pas valide.")
+  }
 })
 
-ipc.on('remove-dir', (event, args) => {
-  if (args!==undefined) directory[args] = []
-  else directory = {}
+ipc.on("select-file-dialog", (event, args) => {
+  if (args === "directory"){
+    dialog.showOpenDialog({
+      properties: ['openDirectory']
+    }, function (files) {
+      if (files) {
+        let dir = files[0]
+        log(`Dialogue: Sélection de dossier: ${dir}`)
+        musics.analyze.directory(dir)
+        if (musics.received.list[dir].length !== 0){
+          event.sender.send('select-callback', dir, musics.received.list[dir].length)
+        }
+        else {
+          musics.ipcValue.index.sender.send("notification", "<span uk-icon=\'icon: warning\'></span> Aucune musique dans la sélection", "warning")
+        }
+      }
+    })
+  }
+  else if (args === "file"){
+    dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [
+        {name: 'Musiques', extensions: ['mp3']}
+      ]
+    }, function (files) {
+      if (files) {
+        let dir = files[0]
+        log(`Dialogue: Sélection d'une musique': ${dir}`)
+        musics.received.list[dir] = dir
+        event.sender.send('select-callback', dir, 1)
+      }
+    })
+  }
 })
 
-ipc.on('loading', (event) => {
-  ipcLoading = event
-  musicsList = []
-  for (var currentDir in directory){
-    directory[currentDir].forEach((file) => {
-      musicsList.push(file)
+ipc.on("select-remove", (event, id) => {
+  log(`Retrait de ${id}`)
+  delete musics.received.list[id]
+})
+
+ipc.on("select-analyze", (event) => {
+  log("Début de l'analyse totale.")
+  musics.received.export = []
+  for (var currentDir in musics.received.list){
+    musics.received.list[currentDir].forEach((file) => {
+      musics.received.export.push(file)
     })
   }
   assets.checkInternet((internet) => {
     if (internet) {
-      console.log("connected")
+      log("Connexion internet.")
+      musics.analyze.musics(musics.received.export)
     } else {
-      console.log("not connected")
-      ipcLoading.sender.send('no-internet')
-      connection = false
+      musics.services.internet = "down"
+      musics.ipcValue.index.sender.send("notification", "<span uk-icon=\'icon: warning\'></span> Pas de connexion internet", "warning")
+      musics.analyze.musics(musics.received.export)
+      log("Pas de connexion internet.")
     }
-  });
-  analyzeMusics(musicsList)
-  log(`Analyse des musiques`)
+  })
 })
 
-ipc.on('submit', (event) => {
-  exportMusics(exportFolder)
-  log(`Export des musiques vers ${exportFolder}`)
-})
-
-ipc.on('show-data', (event) => {
-  ipcPreview.sender.send('show-data', index, temp, summary, exportFolder)
-})
-
-ipc.on('preview-ready', (event) => {
-  ipcPreview = event
-})
-
-ipc.on('export-dialog', (event) => {
+ipc.on("preview-save", (event) =>{
+  assets.createFolder(path.resolve(__dirname,"../export"))
   dialog.showOpenDialog({
-    properties: ['openFile', 'openDirectory']
+    title: 'Exporter les musiques',
+    properties: ['openDirectory'],
+    defaultPath: path.resolve(__dirname,"../export")
   }, function (files) {
-    if (files) {
-      let selectedFolder = files[0]
-      exportFolder = selectedFolder
-      event.sender.send('export-dialog', selectedFolder)
-    }
+    let dir = files[0]
+    event.sender.send('preview-save', dir)
+    log(`Requête d'export.`)
+    musics.save(dir)
   })
 })
 
-function analyzeDirectory (dir) {
-  directory[dir] = glob.sync(path.join(dir,'/**/@(*.mp3|*.wav)'))
-  log(`Liste des fichiers: ${directory/*.join('\n')*/}`)
-}
 
-function artistRequest (artist) {
-  lastfm.artistInfo({ name: artist }, (err, data) => {
-    if (err) {
-      log(`Lastfm: ${err}`, 2)
-      if (!connection){
-        console.log('no internet')
-        //ipcLoading.sender.send('no-internet')
-        let rand = getRandomInt(1, 3)
-        copy(path.resolve(__dirname,`../assets/images/default-artist${rand}.jpg`), path.join(temp,'covers',`${artist}.jpg`))
-      }
-    } 
-    else {
-      console.log('data')
-      log(`Requête: ${artist}`)
-      summary[artist]={}
-      summary[artist].summary = data.summary
-      summary[artist].similar = []
-      for (similarArtist in data.similar){
-        summary[artist].similar.push(data.similar[similarArtist].name)
-      }
-      summary[artist].tags = data.tags
-      download(data.images[data.images.length - 1], path.join(temp,'covers',`${artist}.jpg`))
-    }
-  })
-}
+ipc.on("ipc-preview", (event) => {
+  musics.ipcValue.preview = event
+})
 
-function albumRequest (album, artist) {
-  lastfm.albumInfo({name: album, artistName: artist}, (err, data) => {
-    if (err) {
-      log(`Lastfm: ${err}`, 2)
-      if (!connection){
-        console.log('no internet')
-        //ipcLoading.sender.send('no-internet')
-        let rand = getRandomInt(1, 5)
-        copy(path.resolve(__dirname,`../assets/images/default-album${rand}.jpg`), path.join(temp,'covers',artist,`${album}.jpg`))
-      }
-    } 
-    else {
-      log(`Requête: ${album} / ${artist}`)
-      download(data.images[data.images.length - 1], path.join(temp,'covers',artist,`${album}.jpg`))
-    }
-  })
-}
+ipc.on("ipc-index", (event) => {
+  musics.ipcValue.index = event
+})
 
-function analyzeMusics (list) {
-  index = {}
-  var advancement = 0
-  downloadAdvancement = 0
-  downloadProgress = 0
-  list.forEach((file) => {
-    ffmetadata.read(file, (err, data) => {
-      if (err) {
-        console.error('Error reading metadata', err)
-        log(`Lecture des metadata: ${err} pour ${file}`, 2)
-        error.push(file)
-      } else {
-        if (!Object.keys(index).includes(data.album_artist)) {
-          index[data.album_artist] = {}
-          downloadAdvancement++
-          artistRequest(data.album_artist)
-        }
-        if (!Object.keys(index[data.album_artist]).includes(data.album)) {
-          index[data.album_artist][data.album] = {}
-
-          let coverpath = path.join(temp,'covers', data.album_artist)
-          createFolder(coverpath)
-          ffmetadata.read(file, {coverPath: [path.join(coverpath,`${data.album}.jpg`)]}, (err) => {
-            if (err) {
-              console.error('Error writing cover art')
-              log(`Pochette (${data.album}): ${err}`, 1)
-              downloadAdvancement++
-              albumRequest(data.album, data.album_artist)
-            } else console.log('Cover art added')
-            log(`Pochette ajoutée: ${data.album}`)
-          })
-        }
-        index[data.album_artist][data.album][data.track] = {}
-        index[data.album_artist][data.album][data.track].title = data.title
-        index[data.album_artist][data.album][data.track].path = file
-        advancement++
-        loading = Math.round(advancement * 100 / musicsList.length)
-        console.log(`${loading}%`)
-        log(`Avancement de l'analyse: ${loading}%`)
-        ipcLoading.sender.send('loading', loading, Math.round(downloadProgress * 100 / downloadAdvancement))
-      }
-    })
-  })
-}
-
-function exportMusics (dir) {
-  console.log(summary)
-  var newDir = path.join(dir,'output-')
-  var artistNumber = 0,
-    trackNumber = 0,
-    artistDir,
-    trackDir
-  newDir = fs.mkdtempSync(newDir)
-  log(`Dossier de sortie: ${newDir}`)
-  var indexStream = fs.createWriteStream(path.join(newDir,`index.txt`), {flags: 'a', autoClose: true})// 'a' means appending (old data will be preserved
-  for (var artist in index) {
-    artistNumber++
-    trackNumber = 0
-    artistDir = digits(artistNumber)
-    createFolder(path.join(newDir,artistDir))
-    indexStream.write(`${artist}\n`)
-    indexStream.write(`\\${artistDir}\n`)
-    for (var album in index[artist]) {
-      indexStream.write(`\t${album}\n`)
-      for (var track in index[artist][album]) {
-        trackNumber++
-        trackDir = digits100(trackNumber)
-        copy(index[artist][album][track].path, path.join(newDir, artistDir, `${trackDir}.mp3`))
-        indexStream.write(`\t\t${index[artist][album][track].title}\n`)
-        indexStream.write(`\t\t\\${trackDir}\n`)
-      }
-    }
-  }
-
-  var listCovers = glob.sync(path.join(temp,'covers','/**'))
-  listCovers.forEach(function(file) {
-    var stat = fs.statSync(file);
-    if (stat.isDirectory()) {
-      Array.prototype.diff = function(a) {
-        return this.filter(function(i) {return a.indexOf(i) < 0;});
-      };
-      let folderToCreate = file.split('/')
-      folderToCreate = folderToCreate.diff(temp.split('\\'))
-      folderToCreate = folderToCreate.join('\\')
-      createFolder(path.join(newDir,folderToCreate))
-    }
-    else{
-      let fileToCreate = file.split('/')
-      fileToCreate = fileToCreate.diff(temp.split('\\'))
-      fileToCreate = fileToCreate.join('\\')
-      copy(file,path.join(newDir,fileToCreate))
-    }
-});
-}
-
-function digits (n) {
-  return (n < 10 ? '0' : '') + n
-}
-function digits100 (n) {
-  return (n < 10 ? '00' : n < 100 ? '0' : '') + n
-}
-
-function createFolder (dirPath) {
-  try {
-    fs.mkdirSync(dirPath)
-    log(`Dossier créé: ${dirPath}`)
-  } catch (err) {
-    if (err.code === 'EEXIST') log(`Le dossier existe déja: ${dirPath}`, 1)
-    else throw err
-  }
-}
-
-function download (url, dest) {
-  assets.download(url, dest, () => {
-    downloadProgress++
-    ipcLoading.sender.send('loading', loading, Math.round(downloadProgress * 100 / downloadAdvancement))
-  })
-}
-
-function copy (source, destination) {
-  fs.createReadStream(source, {autoClose: true}).pipe(fs.createWriteStream(destination))
-}
-
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+ipc.on("ipc-select", (event) => {
+  musics.ipcValue.select = event
+})
 
 function log (args, level) {
-  logging.write(__filename, args, level)
+	logging.write(__filename, args, level)
 }
-
-
-

@@ -1,102 +1,113 @@
 const ipc = require('electron').ipcRenderer
-require('../assets/uikit.min.js')
+const path = require('path')
 
-const submit = document.getElementById('submit')
-const selectDir = document.getElementById('select-directory')
-const addDir = document.getElementById('add-directory')
-const deleteDir = document.getElementById('delete-directory')
-const sendDir = document.getElementById('send-directory')
-const closeDir = document.getElementsByClassName('close-dir')
-const dirList = document.getElementById('directory-list')
-const load = document.getElementById('loading')
-const retry = document.getElementById('retry')
-const continuer = document.getElementById('continuer')
-var bar, barDownload
+const select = {
+  upload: document.getElementById('select'),
+  directory: document.getElementById('select-directory'),
+  file: document.getElementById('select-file'),
+  list: document.getElementById('select-list'),
+  analyze: document.getElementById('select-analyze'),
+  bar: {
+    analyze: document.getElementById('select-bar-analyze'),
+    download: document.getElementById('select-bar-download'),
+  },
+  spinner: document.getElementById('select-spinner'),
+}
 
 
-///////Détection des actions////////
-selectDir.addEventListener('click', (event) => {
-  ipc.send('open-file-dialog', 'select')
-  while (dirList.firstChild) {
-    dirList.removeChild(dirList.firstChild)
+select.upload.addEventListener('drop', function (e) {
+  e.preventDefault();
+  e.stopPropagation();
+  
+  for (let f of e.dataTransfer.files) {
+    console.log('File(s) you dragged here: ', f.path)
+    ipc.send("select-upload", f.path)
   }
 })
 
-addDir.addEventListener('click', (event) => {
-  ipc.send('open-file-dialog')
+select.directory.addEventListener('click', (event) => {
+  ipc.send("select-file-dialog","directory")
 })
 
-deleteDir.addEventListener('click', (event) => {
-  ipc.send('remove-dir')
-  while (dirList.firstChild) {
-    dirList.removeChild(dirList.firstChild)
-  }
-  disable()
+select.file.addEventListener('click', (event) => {
+  ipc.send("select-file-dialog","file")
 })
 
-sendDir.addEventListener('click', (event) => {
-  load.innerHTML = `<p>Analyse des musiques</p>
-                      <progress id="progressbar" class="uk-progress" value="0" max="100"></progress>
-                    <p>Récupération de données</p>
-                      <progress id="progressbarDownload" class="uk-progress" value="0" max="100"></progress>`
-  sendDir.setAttribute("disabled", "");
-  ipc.send('loading')
+select.analyze.addEventListener('click', (event) => {
+  select.bar.analyze.value = 0
+  select.bar.analyze.max = 1
+  select.bar.download.value = 0
+  select.bar.download.max = 1
+  select.spinner.setAttribute("uk-spinner", "")
+  ipc.send("select-analyze")
 })
 
-document.addEventListener('click', (event) => {
-  if (event.target.parentNode.className=='uk-notification-close close-dir uk-close uk-icon') {
+select.list.addEventListener('click', (event) => {
+  console.log(event.target.parentNode)
+  if (event.target.parentNode.className === 'uk-notification-close close-dir uk-close uk-icon') {
     var dir = event.target.parentNode.parentNode
-    ipc.send('remove-dir', dir.id)
+    ipc.send('select-remove', dir.id)
     dir.parentNode.removeChild(dir)
-    if (!dirList.firstChild) {
-      disable()
+    if (!select.list.firstChild) {
+      select.analyze.setAttribute("disabled", "")
+      select.analyze.classList.add('uk-animation-shake')
     }
   }
 })
 
-function disable (){
-  deleteDir.setAttribute("disabled", "");
-  addDir.setAttribute("disabled", "");
-  sendDir.setAttribute("disabled", "");
-}
-
-retry.addEventListener('click', (event) => {
-  ipc.send('loading')
+document.addEventListener('dragover', function (e) {
+  e.preventDefault();
+  e.stopPropagation();
+})
+document.addEventListener('drop', function (e) {
+  e.preventDefault();
+  e.stopPropagation();
 })
 
-continuer.addEventListener('click', function (event) {
-  document.querySelector(`a[data-section=preview]`).click()
-  ipc.send('show-data')
-})
-
-
-////////Réponse des canaux///////
-ipc.on('selected-directory', function (event, path, nb) {
-  deleteDir.removeAttribute('disabled');
-  addDir.removeAttribute('disabled');
-  sendDir.removeAttribute('disabled');
-
-  dirList.innerHTML += `<p class="uk-notification-message uk-notification-message-primary" id="${path}">
-                            <a href="#" class="uk-notification-close close-dir" uk-close></a>
-                            ${path}
-                            <span class="uk-badge">${nb}</span>
-                        </p>`
-})
-
-ipc.on('loading', function (event, loading, download) {
-  bar = document.getElementById('progressbar')
-  barDownload = document.getElementById('progressbarDownload')
-  console.log("loading:",loading)
-  console.log("download:",download)
-  bar.value = loading
-  barDownload.value = download
-  if (loading===100&&download===100){
-    document.querySelector(`a[data-section=preview]`).click()
-    ipc.send('show-data')
+ipc.on("select-callback", (event, dir, length) => {
+  console.log(dir,length)
+  select.analyze.removeAttribute('disabled')
+  select.analyze.classList.remove('uk-animation-shake')
+  if (length === 1){
+    select.list.innerHTML += `<p class="uk-notification-message uk-notification-message-default uk-animation-slide-left" id="${dir}">
+                                <a href="#" class="uk-notification-close close-dir" uk-close></a>
+                                <span class="uk-margin-small-right" uk-icon="icon: copy"></span>
+                                ${dir}
+                              </p>`
+  }
+  else {
+    select.list.innerHTML += `<p class="uk-notification-message uk-notification-message-primary uk-animation-slide-left" id="${dir}">
+                                <a href="#" class="uk-notification-close close-dir" uk-close></a>
+                                <span class="uk-margin-small-right" uk-icon="icon: folder"></span>
+                                ${dir}
+                                <span class="uk-badge">${length}</span>
+                              </p>`
   }
 })
 
-ipc.on('no-internet', (event) => {
-  document.getElementById('no-internet-trigger').click()
-  console.log('no internet')
+ipc.on("select-progress-analyze", (event, value, max) =>{
+  select.bar.analyze.value = value
+  select.bar.analyze.max = max
 })
+
+ipc.on("select-progress-download", (event, value, max) =>{
+  select.bar.download.value = value
+  select.bar.download.max = max
+})
+
+ipc.on("select-done", (event) => {
+  select.bar.analyze.value = 0
+  select.bar.analyze.max = 1
+  select.bar.download.value = 0
+  select.bar.download.max = 1
+  select.spinner.removeAttribute("uk-spinner")
+  ipc.send("switch-section", "preview")
+})
+
+ipc.send("ipc-select")
+
+function log (args, level){
+  ipc.send('log', __filename, args, level)
+}
+
+log(`${path.basename(__filename)} importé avec succès.`)
